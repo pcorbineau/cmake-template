@@ -3,9 +3,13 @@ add_library(mylib)
 target_sources(mylib
 	PUBLIC
 		include/mylib/mylib.hpp
+		include/mylib/platform.hpp
 		include/mylib/log.hpp
 	PRIVATE
 		src/mylib.cpp
+		$<$<PLATFORM_ID:Linux>:src/platform_linux.cpp>
+		$<$<PLATFORM_ID:Darwin>:src/platform_macos.cpp>
+		$<$<PLATFORM_ID:Windows>:src/platform_windows.cpp>
 )
 target_include_directories(mylib
 	PUBLIC

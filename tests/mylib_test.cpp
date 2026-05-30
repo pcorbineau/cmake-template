@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <mylib/mylib.hpp>
+#include <mylib/platform.hpp>
 
 TEST_CASE("Test add function", "[add]") {
   REQUIRE(mylib::add(2, 3) == 5);
@@ -21,4 +22,8 @@ TEST_CASE("Test add_inline2 function", "[add_inline2]") {
 
 TEST_CASE("Test to_string function", "[to_string]") {
   REQUIRE(mylib::to_string(std::numeric_limits<std::uint64_t>::max()) == "18446744073709551615");
+}
+
+TEST_CASE("Test print_platform function", "[platform]") {
+  mylib::print_platform();
 }
