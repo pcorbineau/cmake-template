@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coverage Reports</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 700px;
+      margin: 4rem auto;
+      padding: 0 1rem;
+      color: #1f2328;
+    }
+    h1 { font-size: 1.5rem; margin-bottom: 2rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+    }
+    th {
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      border-bottom: 2px solid #d0d7de;
+      color: #656d76;
+      font-weight: 600;
+    }
+    td {
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid #d0d7de;
+    }
+    td.pct { font-variant-numeric: tabular-nums; }
+    .bar-wrap {
+      background: #eaeef2;
+      border-radius: 3px;
+      height: 8px;
+      width: 120px;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 0.5rem;
+    }
+    .bar {
+      display: block;
+      height: 100%;
+      border-radius: 3px;
+      background: #1a7f37;
+    }
+    .bar.warn  { background: #bf8700; }
+    .bar.low   { background: #cf222e; }
+    a { color: #0969da; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .loading { color: #656d76; font-style: italic; }
+    .na { color: #656d76; }
+  </style>
+</head>
+<body>
+  <h1>Coverage Reports</h1>
+  <table id="summary-table">
+    <thead>
+      <tr>
+        <th>Backend</th>
+        <th>Lines</th>
+        <th>Functions</th>
+        <th>Branches</th>
+        <th>Report</th>
+      </tr>
+    </thead>
+    <tbody id="summary-body">
+      <tr><td colspan="5" class="loading">Loading…</td></tr>
+    </tbody>
+  </table>
+
+  <script>
+    function barHtml(pct) {
+      const cls = pct >= 80 ? '' : pct >= 60 ? ' warn' : ' low';
+      return `${pct}%<span class="bar-wrap"><span class="bar${cls}" style="width:${pct}%"></span></span>`;
+    }
+
+    const backends = [
+      { key: 'clang', label: 'Clang (llvm-cov)', href: 'clang/index.html' },
+      { key: 'gcc',   label: 'GCC (gcovr)',      href: 'gcc/index.html'   },
+      { key: 'msvc',  label: 'MSVC (OpenCppCoverage)', href: 'msvc/index.html', linesOnly: true },
+    ];
+
+    fetch('summary.json')
+      .then(r => r.json())
+      .then(data => {
+        const tbody = document.getElementById('summary-body');
+        tbody.innerHTML = backends.map(b => {
+          const d = data[b.key];
+          const funcCell  = b.linesOnly ? '<td class="pct na" title="Not reported by OpenCppCoverage">—</td>' : `<td class="pct">${barHtml(d.functions)}</td>`;
+          const branchCell = b.linesOnly ? '<td class="pct na" title="Not reported by OpenCppCoverage">—</td>' : `<td class="pct">${barHtml(d.branches)}</td>`;
+          return `<tr>
+            <td>${b.label}</td>
+            <td class="pct">${barHtml(d.lines)}</td>
+            ${funcCell}
+            ${branchCell}
+            <td><a href="${b.href}">View report</a></td>
+          </tr>`;
+        }).join('');
+      })
+      .catch(() => {
+        document.getElementById('summary-body').innerHTML =
+          '<tr><td colspan="5" class="loading">Coverage data unavailable.</td></tr>';
+      });
+  </script>
+</body>
+</html>
