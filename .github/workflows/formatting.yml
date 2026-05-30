@@ -18,7 +18,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install gersemi
-        run: pip install -r .github/requirements.txt
+        run: pip install -r .github/requirements-formatting.txt
 
       - name: Check CMake formatting
         run: gersemi --check .
