@@ -2,6 +2,7 @@
 
 #include <variant>
 
+#include "coolgui/widget_types.hpp"
 #include "coolgui/window_types.hpp"
 
 namespace coolgui {
@@ -18,6 +19,16 @@ struct CursorMoveEvent {
   CursorY y;
 };
 
-using Event = std::variant<CloseEvent, ResizeEvent, CursorMoveEvent>;
+struct MouseButtonEvent {
+  MouseButton button;
+  f64 x;
+  f64 y;
+};
+
+struct TextInputEvent {
+  char character{};
+};
+
+using Event = std::variant<CloseEvent, ResizeEvent, CursorMoveEvent, MouseButtonEvent, TextInputEvent>;
 
 } // namespace coolgui

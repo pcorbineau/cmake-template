@@ -21,6 +21,9 @@ enum class Scenario : u8 {
   ThenResize,              // poll_event returns ResizeEvent once, then nullopt
   ThenCursorMove,          // poll_event returns CursorMoveEvent once, then nullopt
   ThenCursorMoveThenClose, // poll_event returns CursorMoveEvent, then CloseEvent, then nullopt
+  ThenMouseClick,          // poll_event returns MouseButtonEvent once, then nullopt
+  ThenTextInput,           // poll_event returns TextInputEvent once, then nullopt
+  ThenMouseThenClose,      // poll_event returns MouseButtonEvent, then CloseEvent, then nullopt
 };
 
 struct Traits {
@@ -56,6 +59,23 @@ struct Traits {
       return coolgui::Event{coolgui::CursorMoveEvent{
           .x = coolgui::CursorX{150.0},
           .y = coolgui::CursorY{250.0},
+      }};
+    case Scenario::ThenMouseClick:
+      scenario_ = Scenario::Empty;
+      return coolgui::Event{coolgui::MouseButtonEvent{
+          .button = coolgui::MouseButton::Left,
+          .x = 50.0,
+          .y = 60.0,
+      }};
+    case Scenario::ThenTextInput:
+      scenario_ = Scenario::Empty;
+      return coolgui::Event{coolgui::TextInputEvent{.character = 'a'}};
+    case Scenario::ThenMouseThenClose:
+      scenario_ = Scenario::ThenClose;
+      return coolgui::Event{coolgui::MouseButtonEvent{
+          .button = coolgui::MouseButton::Left,
+          .x = 100.0,
+          .y = 200.0,
       }};
     case Scenario::Empty:
     default:
