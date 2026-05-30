@@ -58,6 +58,13 @@ add_custom_target(
 			-DIGNORE_REGEX=${coverage_ignore_regex}
 			-DOUTPUT=${CMAKE_BINARY_DIR}/coverage_report/summary.json
 			-P ${CMAKE_CURRENT_LIST_DIR}/llvm_cov_export.cmake
+		COMMAND ${CMAKE_COMMAND}
+			-DLLVM_COV=${LLVM_COV_EXECUTABLE}
+			-DTARGET_FILE=$<TARGET_FILE:${coverage_target}>
+			-DPROFDATA=${CMAKE_BINARY_DIR}/coverage.profdata
+			-DIGNORE_REGEX=${coverage_ignore_regex}
+			-DOUTPUT=${CMAKE_BINARY_DIR}/coverage_report/cobertura.xml
+			-P ${CMAKE_CURRENT_LIST_DIR}/llvm_cov_to_cobertura.cmake
 		COMMAND ${LLVM_COV_EXECUTABLE} report
 			--instr-profile=${CMAKE_BINARY_DIR}/coverage.profdata
 			--ignore-filename-regex=${coverage_ignore_regex}

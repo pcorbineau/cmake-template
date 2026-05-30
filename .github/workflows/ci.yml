@@ -10,6 +10,8 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  code-quality: write
+  pull-requests: read
 
 jobs:
   build:
@@ -131,6 +133,15 @@ jobs:
       - name: Coverage report
         if: matrix.build.coverage
         run: cmake --build build/ --target coverage
+
+      - name: Upload code coverage
+        if: matrix.build.coverage
+        uses: actions/upload-code-coverage@v1
+        with:
+          file: build/coverage_report/cobertura.xml
+          language: C++
+          label: code-coverage/${{ matrix.os.coverage_name }}
+          fail-on-error: false
 
       - name: Upload coverage report artifact
         if: matrix.build.coverage && github.ref == 'refs/heads/main'

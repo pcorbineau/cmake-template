@@ -38,6 +38,7 @@ add_custom_target(
 		--gcov-executable ${GCOV_EXECUTABLE_PATH}
 		--html-details ${CMAKE_BINARY_DIR}/coverage_report/index.html
 		--json-summary ${CMAKE_BINARY_DIR}/coverage_report/summary.json
+		--cobertura ${CMAKE_BINARY_DIR}/coverage_report/cobertura.xml
 		--exclude-throw-branches
 		--exclude-noncode-lines
 		--exclude ${CMAKE_SOURCE_DIR}/tests/.*

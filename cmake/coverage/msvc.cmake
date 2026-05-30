@@ -16,7 +16,7 @@ set(COVERAGE_LD_FLAGS "")
 
 # OpenCppCoverage requires Windows-style backslash paths.
 file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}/lib" _coverage_sources)
-file(TO_NATIVE_PATH "${CMAKE_BINARY_DIR}/coverage_report/coverage.xml" _coverage_xml)
+file(TO_NATIVE_PATH "${CMAKE_BINARY_DIR}/coverage_report/cobertura.xml" _coverage_xml)
 file(TO_NATIVE_PATH "${CMAKE_BINARY_DIR}/coverage_report/summary.json" _coverage_summary)
 file(TO_NATIVE_PATH "${CMAKE_BINARY_DIR}/coverage_report" _coverage_report_dir)
 
