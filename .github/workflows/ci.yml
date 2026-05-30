@@ -147,7 +147,9 @@ jobs:
           CXX: ${{ matrix.os.cxx }}
 
       - name: Configure
-        run: cmake --preset ${{ matrix.build.preset }}${{ matrix.os.preset_suffix }}
+        run: >
+          cmake --preset ${{ matrix.build.preset }}${{ matrix.os.preset_suffix }}
+          ${{ runner.os == 'Windows' && '-DUSE_CLANG_TIDY=OFF' || '' }}
         env:
           CC: ${{ matrix.os.cc }}
           CXX: ${{ matrix.os.cxx }}
