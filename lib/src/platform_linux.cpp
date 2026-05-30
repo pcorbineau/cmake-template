@@ -63,8 +63,8 @@ auto LinuxTraits::poll_event(Handle &handle) -> std::optional<Event> {
 
   if (xev.type == ConfigureNotify) {
     return Event{ResizeEvent{
-        Width{static_cast<u32>(xev.xconfigure.width)},
-        Height{static_cast<u32>(xev.xconfigure.height)},
+        .width = Width{static_cast<u32>(xev.xconfigure.width)},
+        .height = Height{static_cast<u32>(xev.xconfigure.height)},
     }};
   }
 

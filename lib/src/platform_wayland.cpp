@@ -182,7 +182,7 @@ auto WaylandTraits::poll_event(Handle &handle) -> std::optional<Event> {
   }
 
   if (s.resize_pending && s.configured) {
-    ResizeEvent ev{Width{s.pending_width}, Height{s.pending_height}};
+    ResizeEvent ev{.width = Width{s.pending_width}, .height = Height{s.pending_height}};
     s.resize_pending = false;
     s.pending_width = 0;
     s.pending_height = 0;

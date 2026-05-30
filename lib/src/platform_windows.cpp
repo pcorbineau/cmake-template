@@ -1,5 +1,6 @@
 #include "coolgui/platform/windows_traits.hpp"
 
+#include <bit>
 #include <string>
 
 #include "coolgui/log.hpp"
@@ -11,12 +12,12 @@ namespace coolgui {
 // can mark close_requested without needing a global.
 static LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   if (msg == WM_NCCREATE) {
-    auto *cs = reinterpret_cast<CREATESTRUCT *>(lparam);
-    SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(cs->lpCreateParams));
+    auto *cs = std::bit_cast<CREATESTRUCT *>(lparam);
+    SetWindowLongPtrW(hwnd, GWLP_USERDATA, std::bit_cast<LONG_PTR>(cs->lpCreateParams));
     return DefWindowProcW(hwnd, msg, wparam, lparam);
   }
 
-  auto *handle = reinterpret_cast<WindowsHandle *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+  auto *handle = std::bit_cast<WindowsHandle *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
 
   switch (msg) {
   case WM_CLOSE:
@@ -50,7 +51,7 @@ auto WindowsTraits::create(WindowConfig cfg) -> Handle {
 
   // Convert title from UTF-8 string_view to UTF-16
   auto titleUtf8 = std::string{cfg.title.get()};
-  i32 wlen = MultiByteToWideChar(CP_UTF8, 0, titleUtf8.c_str(), -1, nullptr, 0);
+  i32 const wlen = MultiByteToWideChar(CP_UTF8, 0, titleUtf8.c_str(), -1, nullptr, 0);
   auto titleW = std::wstring(static_cast<usize>(wlen), L'\0');
   MultiByteToWideChar(CP_UTF8, 0, titleUtf8.c_str(), -1, titleW.data(), wlen);
 
@@ -95,8 +96,8 @@ auto WindowsTraits::poll_event(Handle &handle) -> std::optional<Event> {
 
     if (msg.message == WM_SIZE) {
       return Event{ResizeEvent{
-          Width{static_cast<u32>(LOWORD(msg.lParam))},
-          Height{static_cast<u32>(HIWORD(msg.lParam))},
+          .width = Width{static_cast<u32>(LOWORD(msg.lParam))},
+          .height = Height{static_cast<u32>(HIWORD(msg.lParam))},
       }};
     }
   }

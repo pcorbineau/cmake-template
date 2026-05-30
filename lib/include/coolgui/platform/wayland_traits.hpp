@@ -45,9 +45,9 @@ struct WaylandHandle {
 struct WaylandTraits {
   using Handle = WaylandHandle;
 
-  auto create(WindowConfig cfg) -> Handle;
-  auto destroy(Handle &handle) -> void;
-  auto poll_event(Handle &handle) -> std::optional<Event>;
+  static auto create(WindowConfig cfg) -> Handle;
+  static auto destroy(Handle &handle) -> void;
+  static auto poll_event(Handle &handle) -> std::optional<Event>;
 };
 
 } // namespace coolgui
