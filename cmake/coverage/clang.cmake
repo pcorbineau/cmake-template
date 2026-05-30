@@ -28,7 +28,9 @@ set(COVERAGE_CXX_FLAGS
 set(COVERAGE_LD_FLAGS -fprofile-instr-generate)
 
 set(coverage_target coolgui_tests)
-set(coverage_ignore_regex "tests/|${CMAKE_BINARY_DIR}|xdg-shell-|platform_wayland\\.cpp|platform_linux\\.cpp")
+set(coverage_ignore_regex
+    "tests/|${CMAKE_BINARY_DIR}|xdg-shell-|platform_wayland\\.cpp|platform_linux\\.cpp"
+)
 
 add_custom_target(
     coverage_cleanup
