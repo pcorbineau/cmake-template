@@ -14,3 +14,8 @@ target_link_libraries(mylib_tests
 
 include(Catch)
 catch_discover_tests(mylib_tests)
+
+add_custom_target(run_tests
+	COMMAND $<TARGET_FILE:mylib_tests>
+	DEPENDS mylib_tests
+)
