@@ -46,16 +46,16 @@ auto xdg_toplevel_configure(void *data, xdg_toplevel * /*toplevel*/, i32 width, 
   auto *state = static_cast<WaylandState *>(data);
   if (width > 0 && height > 0) {
     state->resize_pending = true;
-    state->event_queue.push_back(Event{ResizeEvent{
+    state->event_queue.emplace_back(ResizeEvent{
         .width = Width{static_cast<u32>(width)},
         .height = Height{static_cast<u32>(height)},
-    }});
+    });
   }
 }
 
 auto xdg_toplevel_close(void *data, xdg_toplevel * /*toplevel*/) -> void {
   auto *state = static_cast<WaylandState *>(data);
-  state->event_queue.push_back(Event{CloseEvent{}});
+  state->event_queue.emplace_back(CloseEvent{});
 }
 
 constexpr xdg_toplevel_listener k_xdg_toplevel_listener{
@@ -179,7 +179,7 @@ auto WaylandTraits::poll_event(Handle &handle) -> std::optional<Event> {
 
   // Dispatch pending events without blocking – callbacks push directly into the queue
   if (wl_display_dispatch_pending(s.display) < 0) {
-    s.event_queue.push_back(Event{CloseEvent{}});
+    s.event_queue.emplace_back(CloseEvent{});
   }
   wl_display_flush(s.display);
 

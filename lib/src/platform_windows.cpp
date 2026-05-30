@@ -21,7 +21,7 @@ auto wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT {
   switch (msg) {
   case WM_CLOSE:
     if (handle != nullptr) {
-      handle->event_queue.push_back(Event{CloseEvent{}});
+      handle->event_queue.emplace_back(coolgui::CloseEvent{});
     }
     return 0;
   case WM_DESTROY:
