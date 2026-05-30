@@ -141,6 +141,7 @@ jobs:
           file: build/coverage_report/cobertura.xml
           language: C++
           label: code-coverage/${{ matrix.os.coverage_name }}
+          fail-on-error: false
 
       - name: Upload coverage report artifact
         if: matrix.build.coverage && github.ref == 'refs/heads/main'
