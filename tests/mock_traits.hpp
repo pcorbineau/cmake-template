@@ -14,9 +14,11 @@ struct Handle {
 };
 
 enum class Scenario : std::uint8_t {
-  Empty,      // poll_event always returns nullopt
-  ThenClose,  // poll_event returns CloseEvent once, then nullopt
-  ThenResize, // poll_event returns ResizeEvent once, then nullopt
+  Empty,                   // poll_event always returns nullopt
+  ThenClose,               // poll_event returns CloseEvent once, then nullopt
+  ThenResize,              // poll_event returns ResizeEvent once, then nullopt
+  ThenCursorMove,          // poll_event returns CursorMoveEvent once, then nullopt
+  ThenCursorMoveThenClose, // poll_event returns CursorMoveEvent, then CloseEvent, then nullopt
 };
 
 struct Traits {
@@ -41,19 +43,40 @@ struct Traits {
           .width = coolgui::Width{1280},
           .height = coolgui::Height{720},
       }};
+    case Scenario::ThenCursorMove:
+      scenario_ = Scenario::Empty;
+      return coolgui::Event{coolgui::CursorMoveEvent{
+          .x = coolgui::CursorX{100.0},
+          .y = coolgui::CursorY{200.0},
+      }};
+    case Scenario::ThenCursorMoveThenClose:
+      scenario_ = Scenario::ThenClose;
+      return coolgui::Event{coolgui::CursorMoveEvent{
+          .x = coolgui::CursorX{150.0},
+          .y = coolgui::CursorY{250.0},
+      }};
     case Scenario::Empty:
     default:
       return std::nullopt;
     }
   }
 
+  auto set_background_color(Handle & /*handle*/, coolgui::BackgroundColor color) -> void {
+    ++set_bg_color_count_;
+    last_bg_color_ = color;
+  }
+
   [[nodiscard]] constexpr auto poll_count() const noexcept -> int { return poll_count_; }
   [[nodiscard]] constexpr auto destroy_count() const noexcept -> int { return destroy_count_; }
+  [[nodiscard]] constexpr auto set_bg_color_count() const noexcept -> int { return set_bg_color_count_; }
+  [[nodiscard]] constexpr auto last_bg_color() const noexcept -> coolgui::BackgroundColor { return last_bg_color_; }
 
 private:
   Scenario scenario_{Scenario::Empty};
   int poll_count_{0};
   int destroy_count_{0};
+  int set_bg_color_count_{0};
+  coolgui::BackgroundColor last_bg_color_{};
 };
 
 } // namespace mock

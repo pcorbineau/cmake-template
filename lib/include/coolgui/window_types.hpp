@@ -26,5 +26,17 @@ using f64 = double;
 using Width = StrongType<u32, struct WidthTag>;
 using Height = StrongType<u32, struct HeightTag>;
 using Title = StrongType<std::string_view, struct TitleTag>;
+using CursorX = StrongType<f64, struct CursorXTag>;
+using CursorY = StrongType<f64, struct CursorYTag>;
+
+struct BackgroundColor {
+  f64 red{};
+  f64 green{};
+  f64 blue{};
+};
+
+[[nodiscard]] constexpr auto operator==(const BackgroundColor &lhs, const BackgroundColor &rhs) noexcept -> bool {
+  return lhs.red == rhs.red && lhs.green == rhs.green && lhs.blue == rhs.blue;
+}
 
 } // namespace coolgui

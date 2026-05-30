@@ -72,3 +72,52 @@ TEST_CASE("BasicWindow destructor does not double-destroy after close", "[BasicW
   REQUIRE(win.traits().destroy_count() == 1);
   // destructor runs here: open_ is false → destroy is NOT called again
 }
+
+TEST_CASE("BasicWindow set_background_color on open window", "[BasicWindow][BackgroundColor]") {
+  coolgui::BasicWindow<mock::Traits> win{k_cfg};
+  coolgui::BackgroundColor const expected{.red = 0.25, .green = 0.50, .blue = 0.75};
+  win.set_background_color(expected);
+  REQUIRE(win.traits().set_bg_color_count() == 1);
+  auto const actual = win.traits().last_bg_color();
+  REQUIRE(actual.red == expected.red);
+  REQUIRE(actual.green == expected.green);
+  REQUIRE(actual.blue == expected.blue);
+}
+
+TEST_CASE("BasicWindow set_background_color on closed window is no-op", "[BasicWindow][BackgroundColor]") {
+  coolgui::BasicWindow<mock::Traits> win{k_cfg, mock::Traits{mock::Scenario::ThenClose}};
+  std::ignore = win.poll(); // window is now closed
+  REQUIRE_FALSE(win.is_open());
+
+  win.set_background_color({.red = 1.0, .green = 0.0, .blue = 0.0});
+  // set_background_color should not have been called on traits
+  REQUIRE(win.traits().set_bg_color_count() == 0);
+}
+
+TEST_CASE("BasicWindow poll returns CursorMoveEvent", "[BasicWindow][CursorMove]") {
+  coolgui::BasicWindow<mock::Traits> win{k_cfg, mock::Traits{mock::Scenario::ThenCursorMove}};
+
+  auto evt = win.poll();
+  REQUIRE(evt.has_value());
+  auto evt_val =
+      evt.value_or(coolgui::Event{coolgui::CursorMoveEvent{.x = coolgui::CursorX{0.0}, .y = coolgui::CursorY{0.0}}});
+  auto *cursor = std::get_if<coolgui::CursorMoveEvent>(&evt_val);
+  REQUIRE(cursor != nullptr);
+  REQUIRE(cursor->x.get() == 100.0);
+  REQUIRE(cursor->y.get() == 200.0);
+  REQUIRE(win.is_open());
+}
+
+TEST_CASE("BasicWindow run dispatches CursorMoveEvent then CloseEvent", "[BasicWindow][CursorMove]") {
+  coolgui::BasicWindow<mock::Traits> win{k_cfg, mock::Traits{mock::Scenario::ThenCursorMoveThenClose}};
+
+  int cursor_calls = 0;
+  win.run([&](const coolgui::Event &event) -> void {
+    if (std::holds_alternative<coolgui::CursorMoveEvent>(event)) {
+      ++cursor_calls;
+    }
+  });
+
+  REQUIRE(cursor_calls == 1);
+  REQUIRE_FALSE(win.is_open());
+}
