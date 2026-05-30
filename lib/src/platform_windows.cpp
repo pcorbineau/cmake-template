@@ -35,7 +35,7 @@ auto wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT {
           RGB(static_cast<BYTE>(handle->bg_color.red * 255.0), static_cast<BYTE>(handle->bg_color.green * 255.0),
               static_cast<BYTE>(handle->bg_color.blue * 255.0));
       HBRUSH brush = CreateSolidBrush(cref);
-      FillRect(reinterpret_cast<HDC>(wparam), &rc, brush);
+      FillRect(std::bit_cast<HDC>(wparam), &rc, brush);
       DeleteObject(brush);
       return 1;
     }
