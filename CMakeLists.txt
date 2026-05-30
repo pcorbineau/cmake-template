@@ -3,17 +3,21 @@ cmake_minimum_required(VERSION 3.28)
 # ---------------------------------------------------------------------------
 # Build options
 # ---------------------------------------------------------------------------
+#conditional option include
+include(CMakeDependentOption)
 option(BUILD_TESTING "Build tests" ON)
 option(BUILD_EXAMPLE "Build the example application" ON)
 option(USE_CONAN "Use Conan for dependency management" ON)
 option(USE_CCACHE "Use ccache for faster builds" ON)
 option(USE_CLANG_TIDY "Use clang-tidy for static analysis" ON)
 option(ENABLE_COVERAGE "Enable code coverage analysis" OFF)
-
-# Linux windowing backend — Wayland (default) or X11
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    option(USE_WAYLAND "Use Wayland instead of X11 for Linux windowing" ON)
-endif()
+cmake_dependent_option(
+    USE_WAYLAND
+    "Use Wayland for display server"
+    ON
+    "NOT WIN32 AND NOT APPLE"
+    OFF
+)
 
 if(USE_CLANG_TIDY AND ENABLE_COVERAGE)
     message(
