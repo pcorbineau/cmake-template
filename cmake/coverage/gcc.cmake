@@ -22,9 +22,7 @@ set(coverage_target mylib_tests)
 
 add_custom_target(
     coverage_cleanup
-    COMMAND ${CMAKE_COMMAND} -E rm -f --
-        ${CMAKE_BINARY_DIR}/*.gcda
-        ${CMAKE_BINARY_DIR}/*.gcno
+    COMMAND ${CMAKE_COMMAND} -E rm -f -- ${CMAKE_BINARY_DIR}/*.gcda ${CMAKE_BINARY_DIR}/*.gcno
     COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_BINARY_DIR}/coverage_report
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Cleaning up coverage data files"
@@ -34,17 +32,15 @@ add_custom_target(
     coverage
     COMMAND $<TARGET_FILE:${coverage_target}>
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/coverage_report
-    COMMAND ${GCOVR_EXECUTABLE}
-        --gcov-executable ${GCOV_EXECUTABLE_PATH}
-        --html-details ${CMAKE_BINARY_DIR}/coverage_report/index.html
-        --json-summary ${CMAKE_BINARY_DIR}/coverage_report/summary.json
-        --exclude-throw-branches
-        --exclude-noncode-lines
-        --exclude ${CMAKE_SOURCE_DIR}/tests/.*
-        --root ${CMAKE_SOURCE_DIR}
+    COMMAND
+        ${GCOVR_EXECUTABLE} --gcov-executable ${GCOV_EXECUTABLE_PATH} --html-details
+        ${CMAKE_BINARY_DIR}/coverage_report/index.html --json-summary
+        ${CMAKE_BINARY_DIR}/coverage_report/summary.json --exclude-throw-branches
+        --exclude-noncode-lines --exclude ${CMAKE_SOURCE_DIR}/tests/.* --root ${CMAKE_SOURCE_DIR}
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     DEPENDS ${coverage_target}
     DEPENDS coverage_cleanup
-    COMMENT "Running ${coverage_target} with coverage instrumentation and generating gcovr HTML report"
+    COMMENT
+        "Running ${coverage_target} with coverage instrumentation and generating gcovr HTML report"
     VERBATIM
 )

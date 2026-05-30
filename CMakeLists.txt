@@ -7,7 +7,10 @@ option(USE_CLANG_TIDY "Use clang-tidy for static analysis" ON)
 option(ENABLE_COVERAGE "Enable code coverage analysis" OFF)
 
 if(USE_CLANG_TIDY AND ENABLE_COVERAGE)
-    message(FATAL_ERROR "USE_CLANG_TIDY and ENABLE_COVERAGE are mutually exclusive. Enable only one at a time.")
+    message(
+        FATAL_ERROR
+        "USE_CLANG_TIDY and ENABLE_COVERAGE are mutually exclusive. Enable only one at a time."
+    )
 endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

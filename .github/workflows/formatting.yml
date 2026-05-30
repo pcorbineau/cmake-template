@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   cmake:
-    name: CMake (neocmakelsp)
+    name: CMake (gersemi)
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
@@ -17,19 +17,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install neocmakelsp
-        run: |
-          url="https://github.com/neocmakelsp/neocmakelsp/releases/latest/download"
-          curl -fsSL "$url/neocmakelsp-x86_64-unknown-linux-gnu.tar.gz" \
-            | tar -xz -C /usr/local/bin
+      - name: Install gersemi
+        run: pip install gersemi
 
       - name: Check CMake formatting
-        run: |
-          files=$(git diff --name-only --diff-filter=ACM origin/${{ github.base_ref }} \
-            -- '*.cmake' '*CMakeLists.txt')
-          [ -z "$files" ] && exit 0
-          echo "$files" | xargs neocmakelsp format -i
-          git diff --exit-code
+        run: gersemi --check .
 
   yaml:
     name: YAML (yamllint)

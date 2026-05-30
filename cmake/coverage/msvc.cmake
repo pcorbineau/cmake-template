@@ -4,8 +4,11 @@ find_program(
     HINTS "C:/Program Files/OpenCppCoverage"
 )
 if(NOT OPENCPPCOVERAGE_EXECUTABLE)
-    message(FATAL_ERROR "OpenCppCoverage not found. Please install it from \
-https://github.com/OpenCppCoverage/OpenCppCoverage to use code coverage with MSVC.")
+    message(
+        FATAL_ERROR
+        "OpenCppCoverage not found. Please install it from \
+https://github.com/OpenCppCoverage/OpenCppCoverage to use code coverage with MSVC."
+    )
     return()
 endif()
 
@@ -31,15 +34,13 @@ add_custom_target(
 
 add_custom_target(
     coverage
-    COMMAND ${OPENCPPCOVERAGE_EXECUTABLE}
-        --sources "${_coverage_sources}"
-        --export_type "html:${_coverage_report_dir}"
-        --export_type "cobertura:${_coverage_xml}"
-        -- $<TARGET_FILE:${coverage_target}>
-    COMMAND ${CMAKE_COMMAND}
-        -DCOBERTURA_XML=${_coverage_xml}
-        -DOUTPUT=${_coverage_summary}
-        -P ${CMAKE_CURRENT_LIST_DIR}/cobertura_to_summary.cmake
+    COMMAND
+        ${OPENCPPCOVERAGE_EXECUTABLE} --sources "${_coverage_sources}" --export_type
+        "html:${_coverage_report_dir}" --export_type "cobertura:${_coverage_xml}" --
+        $<TARGET_FILE:${coverage_target}>
+    COMMAND
+        ${CMAKE_COMMAND} -DCOBERTURA_XML=${_coverage_xml} -DOUTPUT=${_coverage_summary} -P
+        ${CMAKE_CURRENT_LIST_DIR}/cobertura_to_summary.cmake
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     DEPENDS ${coverage_target}
     DEPENDS coverage_cleanup
