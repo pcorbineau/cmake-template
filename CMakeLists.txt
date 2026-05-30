@@ -13,6 +13,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(conan)
 include(ccache)
 include(clang-tidy)
+include(compile-options)
 
 set(CMAKE_CXX_STANDARD 23)
 
