@@ -1,1 +1,4 @@
-command_upcase = "lower_case"
+[format]
+# Format with an external formatter.
+program = "gersemi"
+args = ["-"]

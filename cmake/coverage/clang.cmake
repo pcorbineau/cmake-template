@@ -17,8 +17,14 @@ if(NOT LLVM_PROFDATA_EXECUTABLE)
     return()
 endif()
 
-set(COVERAGE_C_FLAGS -fprofile-instr-generate -fcoverage-mapping)
-set(COVERAGE_CXX_FLAGS -fprofile-instr-generate -fcoverage-mapping)
+set(COVERAGE_C_FLAGS
+    -fprofile-instr-generate
+    -fcoverage-mapping
+)
+set(COVERAGE_CXX_FLAGS
+    -fprofile-instr-generate
+    -fcoverage-mapping
+)
 set(COVERAGE_LD_FLAGS -fprofile-instr-generate)
 
 set(coverage_target mylib_tests)
@@ -30,7 +36,8 @@ add_custom_target(
     COMMAND
         ${CMAKE_COMMAND} -E rm -f -- ${CMAKE_BINARY_DIR}/*.profraw ${CMAKE_BINARY_DIR}/*.profdata
         ${CMAKE_BINARY_DIR}/*.gcda ${CMAKE_BINARY_DIR}/*.gcno
-    COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_BINARY_DIR}/coverage_report
+    COMMAND
+        ${CMAKE_COMMAND} -E rm -rf ${CMAKE_BINARY_DIR}/coverage_report
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Cleaning up coverage data files"
 )
@@ -58,8 +65,10 @@ add_custom_target(
         ${LLVM_COV_EXECUTABLE} report --instr-profile=${CMAKE_BINARY_DIR}/coverage.profdata
         --ignore-filename-regex=${coverage_ignore_regex} $<TARGET_FILE:${coverage_target}>
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    DEPENDS ${coverage_target}
-    DEPENDS coverage_cleanup
+    DEPENDS
+        ${coverage_target}
+    DEPENDS
+        coverage_cleanup
     COMMENT "Running ${coverage_target} with coverage instrumentation and generating report"
     VERBATIM
 )

@@ -7,7 +7,9 @@ file(GLOB_RECURSE conan_config_files *cmakedeps_paths.cmake)
 list(FILTER conan_config_files INCLUDE REGEX ".*generators.*")
 list(
     TRANSFORM conan_config_files
-    REPLACE "^(.*)(\/|\\\\)(.*)cmakedeps_paths.cmake$" "\\1"
+    REPLACE
+        "^(.*)(\/|\\\\)(.*)cmakedeps_paths.cmake$"
+        "\\1"
     OUTPUT_VARIABLE conan_config_dirs
 )
 message(STATUS "Adding Conan generators directories to CMAKE_PREFIX_PATH: ${conan_config_dirs}")
