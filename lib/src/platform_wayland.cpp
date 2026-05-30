@@ -41,8 +41,8 @@ constexpr xdg_surface_listener k_xdg_surface_listener{
 // ---------------------------------------------------------------------------
 // xdg_toplevel listener — handle close and configure (resize)
 // ---------------------------------------------------------------------------
-auto xdg_toplevel_configure(void *data, xdg_toplevel * /*toplevel*/, i32 width, i32 height,
-                            wl_array * /*states*/) -> void {
+auto xdg_toplevel_configure(void *data, xdg_toplevel * /*toplevel*/, i32 width, i32 height, wl_array * /*states*/)
+    -> void {
   auto *state = static_cast<WaylandState *>(data);
   if (width > 0 && height > 0) {
     state->pending_width = static_cast<u32>(width);
@@ -59,6 +59,8 @@ auto xdg_toplevel_close(void *data, xdg_toplevel * /*toplevel*/) -> void {
 constexpr xdg_toplevel_listener k_xdg_toplevel_listener{
     .configure = xdg_toplevel_configure,
     .close = xdg_toplevel_close,
+    .configure_bounds = nullptr,
+    .wm_capabilities = nullptr,
 };
 
 // ---------------------------------------------------------------------------
