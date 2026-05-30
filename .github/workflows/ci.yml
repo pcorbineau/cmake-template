@@ -28,6 +28,7 @@ jobs:
             multi_config: false
             conan_cmake_generator: Ninja
             setup_msvc: false
+            conan_cache_path: ~/.conan2/p
           - name: macOS Clang
             runner: macos-26
             cc: clang
@@ -37,6 +38,7 @@ jobs:
             multi_config: false
             conan_cmake_generator: Ninja
             setup_msvc: false
+            conan_cache_path: ~/.conan2/p
           - name: Windows MSVC Ninja
             runner: windows-2025-vs2026
             coverage_name: msvc
@@ -44,12 +46,14 @@ jobs:
             multi_config: false
             conan_cmake_generator: Ninja
             setup_msvc: true
+            conan_cache_path: ~\.conan2\p
           - name: Windows MSVC VS
             runner: windows-2025-vs2026
             preset_suffix: "-vs"
             multi_config: true
             conan_cmake_generator: Visual Studio 18 2026
             setup_msvc: false
+            conan_cache_path: ~\.conan2\p
         build:
           - preset: debug
             conan_build_type: Debug
@@ -115,7 +119,7 @@ jobs:
       - name: Cache Conan packages
         uses: actions/cache@v5
         with:
-          path: ~/.conan2/p
+          path: ${{ matrix.os.conan_cache_path }}
           key: conan-${{ matrix.os.name }}-${{ matrix.build.conan_build_type }}-${{ hashFiles('conanfile.txt') }}
           restore-keys: conan-${{ matrix.os.name }}-${{ matrix.build.conan_build_type }}-
 
