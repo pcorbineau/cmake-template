@@ -12,12 +12,12 @@ namespace coolgui {
 
 template <WindowTraits Traits> class BasicWindow {
   Traits traits_;
-  typename Traits::Handle handle_;
+  Traits::Handle handle_;
   bool open_{true};
 
 public:
   explicit constexpr BasicWindow(WindowConfig cfg, Traits traits = Traits{})
-      : traits_{std::move(traits)}, handle_{[this, &cfg] { return traits_.create(cfg); }()} {
+      : traits_{std::move(traits)}, handle_{[this, &cfg] -> auto { return traits_.create(cfg); }()} {
     LOGI("Window created: {}x{}", cfg.width.get(), cfg.height.get());
   }
 
@@ -29,14 +29,14 @@ public:
 
   // Non-copyable, movable
   BasicWindow(const BasicWindow &) = delete;
-  BasicWindow &operator=(const BasicWindow &) = delete;
+  auto operator=(const BasicWindow &) -> BasicWindow & = delete;
 
   constexpr BasicWindow(BasicWindow &&other) noexcept
       : traits_(std::move(other.traits_)), handle_(std::move(other.handle_)), open_(other.open_) {
     other.open_ = false;
   }
 
-  constexpr BasicWindow &operator=(BasicWindow &&other) noexcept {
+  constexpr auto operator=(BasicWindow &&other) noexcept -> BasicWindow & {
     if (this != &other) {
       if (open_) {
         traits_.destroy(handle_);

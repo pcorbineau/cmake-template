@@ -13,7 +13,7 @@ namespace coolgui {
 //   - destroy(Handle&)       -> void
 //   - poll_event(Handle&)    -> std::optional<Event>
 template <typename T>
-concept WindowTraits = requires(T t, typename T::Handle &h, WindowConfig cfg) {
+concept WindowTraits = requires(T t, T::Handle &h, WindowConfig cfg) {
   { t.create(cfg) } -> std::same_as<typename T::Handle>;
   { t.destroy(h) } -> std::same_as<void>;
   { t.poll_event(h) } -> std::same_as<std::optional<Event>>;

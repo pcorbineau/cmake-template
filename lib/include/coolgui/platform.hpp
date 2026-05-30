@@ -2,12 +2,12 @@
 
 #include "coolgui/window.hpp"
 
-#if defined(__APPLE__)
+#ifdef __APPLE__
 #include "coolgui/platform/macos_traits.hpp"
 namespace coolgui {
 using NativeTraits = MacosTraits;
 }
-#elif defined(__linux__)
+#elifdef __linux__
 #if defined(COOLGUI_USE_WAYLAND)
 #include "coolgui/platform/wayland_traits.hpp"
 namespace coolgui {
