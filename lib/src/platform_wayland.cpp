@@ -193,4 +193,8 @@ auto WaylandTraits::poll_event(Handle &handle) -> std::optional<Event> {
   return std::nullopt;
 }
 
+auto WaylandTraits::set_background_color(Handle & /*handle*/, BackgroundColor /*color*/) -> void {
+  // Background color changes on Wayland require a rendering context; stubbed for now.
+}
+
 } // namespace coolgui

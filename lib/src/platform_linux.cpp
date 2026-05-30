@@ -71,4 +71,8 @@ auto LinuxTraits::poll_event(Handle &handle) -> std::optional<Event> {
   return std::nullopt;
 }
 
+auto LinuxTraits::set_background_color(Handle & /*handle*/, BackgroundColor /*color*/) -> void {
+  // Background color changes on X11 require a rendering context; stubbed for now.
+}
+
 } // namespace coolgui

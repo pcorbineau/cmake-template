@@ -116,4 +116,8 @@ auto WindowsTraits::poll_event(Handle &handle) -> std::optional<Event> {
   return std::nullopt;
 }
 
+auto WindowsTraits::set_background_color(Handle & /*handle*/, BackgroundColor /*color*/) -> void {
+  // Background color changes on Win32 require a rendering context; stubbed for now.
+}
+
 } // namespace coolgui
