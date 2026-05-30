@@ -1,6 +1,0 @@
-data:
-  key: value
-  another_key:  value_with_extra_space
-  list:
-   - item1
-   - item2

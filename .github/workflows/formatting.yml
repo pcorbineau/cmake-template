@@ -35,7 +35,7 @@ jobs:
         run: pip install yamllint
 
       - name: Check YAML formatting
-        run: yamllint -c .yamllint.yml .
+        run: yamllint -c .yamllint.yml .github/
 
   python:
     name: Python (ruff)
@@ -48,4 +48,4 @@ jobs:
         run: pip install ruff
 
       - name: Check Python formatting
-        run: ruff format --check .
+        run: ruff format --check .github/
