@@ -8,20 +8,21 @@
 #include "coolgui/window_types.hpp"
 
 namespace coolgui {
+namespace {
 
 // ---------------------------------------------------------------------------
 // xdg_wm_base listener — must respond to ping to keep the compositor happy
 // ---------------------------------------------------------------------------
-static void xdg_wm_base_ping(void * /*data*/, xdg_wm_base *base, u32 serial) { xdg_wm_base_pong(base, serial); }
+auto xdg_wm_base_ping(void * /*data*/, xdg_wm_base *base, u32 serial) -> void { xdg_wm_base_pong(base, serial); }
 
-static constexpr xdg_wm_base_listener k_xdg_wm_base_listener{
+constexpr xdg_wm_base_listener k_xdg_wm_base_listener{
     .ping = xdg_wm_base_ping,
 };
 
 // ---------------------------------------------------------------------------
 // xdg_surface listener — acknowledge configure events
 // ---------------------------------------------------------------------------
-static void xdg_surface_configure(void *data, xdg_surface *xdg_surf, u32 serial) {
+auto xdg_surface_configure(void *data, xdg_surface *xdg_surf, u32 serial) -> void {
   auto *state = static_cast<WaylandState *>(data);
   xdg_surface_ack_configure(xdg_surf, serial);
   state->configured = true;
@@ -33,15 +34,15 @@ static void xdg_surface_configure(void *data, xdg_surface *xdg_surf, u32 serial)
   }
 }
 
-static constexpr xdg_surface_listener k_xdg_surface_listener{
+constexpr xdg_surface_listener k_xdg_surface_listener{
     .configure = xdg_surface_configure,
 };
 
 // ---------------------------------------------------------------------------
 // xdg_toplevel listener — handle close and configure (resize)
 // ---------------------------------------------------------------------------
-static void xdg_toplevel_configure(void *data, xdg_toplevel * /*toplevel*/, i32 width, i32 height,
-                                   wl_array * /*states*/) {
+auto xdg_toplevel_configure(void *data, xdg_toplevel * /*toplevel*/, i32 width, i32 height,
+                            wl_array * /*states*/) -> void {
   auto *state = static_cast<WaylandState *>(data);
   if (width > 0 && height > 0) {
     state->pending_width = static_cast<u32>(width);
@@ -50,12 +51,12 @@ static void xdg_toplevel_configure(void *data, xdg_toplevel * /*toplevel*/, i32 
   }
 }
 
-static void xdg_toplevel_close(void *data, xdg_toplevel * /*toplevel*/) {
+auto xdg_toplevel_close(void *data, xdg_toplevel * /*toplevel*/) -> void {
   auto *state = static_cast<WaylandState *>(data);
   state->close_requested = true;
 }
 
-static constexpr xdg_toplevel_listener k_xdg_toplevel_listener{
+constexpr xdg_toplevel_listener k_xdg_toplevel_listener{
     .configure = xdg_toplevel_configure,
     .close = xdg_toplevel_close,
 };
@@ -63,7 +64,7 @@ static constexpr xdg_toplevel_listener k_xdg_toplevel_listener{
 // ---------------------------------------------------------------------------
 // wl_registry listener — bind globals
 // ---------------------------------------------------------------------------
-static void registry_global(void *data, wl_registry *registry, u32 name, const char *interface, u32 version) {
+auto registry_global(void *data, wl_registry *registry, u32 name, const char *interface, u32 version) -> void {
   auto *state = static_cast<WaylandState *>(data);
 
   if (std::string_view{interface} == wl_compositor_interface.name) {
@@ -75,14 +76,16 @@ static void registry_global(void *data, wl_registry *registry, u32 name, const c
   }
 }
 
-static void registry_global_remove(void * /*data*/, wl_registry * /*registry*/, u32 /*name*/) {
+auto registry_global_remove(void * /*data*/, wl_registry * /*registry*/, u32 /*name*/) -> void {
   // Not handled for now
 }
 
-static constexpr wl_registry_listener k_registry_listener{
+constexpr wl_registry_listener k_registry_listener{
     .global = registry_global,
     .global_remove = registry_global_remove,
 };
+
+} // namespace
 
 // ---------------------------------------------------------------------------
 // WaylandTraits implementation

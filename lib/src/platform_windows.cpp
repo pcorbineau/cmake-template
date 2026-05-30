@@ -7,10 +7,9 @@
 #include "coolgui/window_types.hpp"
 
 namespace coolgui {
+namespace {
 
-// Store a pointer to the handle in the window's user data so the WndProc
-// can mark close_requested without needing a global.
-static LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+auto wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT {
   if (msg == WM_NCCREATE) {
     auto *cs = std::bit_cast<CREATESTRUCT *>(lparam);
     SetWindowLongPtrW(hwnd, GWLP_USERDATA, std::bit_cast<LONG_PTR>(cs->lpCreateParams));
@@ -32,6 +31,8 @@ static LRESULT CALLBACK wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpar
     return DefWindowProcW(hwnd, msg, wparam, lparam);
   }
 }
+
+} // namespace
 
 auto WindowsTraits::create(WindowConfig cfg) -> Handle {
   static constexpr const wchar_t *kClassName = L"CoolguiWindow";
