@@ -102,18 +102,21 @@ jobs:
           sudo apt-get update -q
           sudo apt-get install -y gcc-16 g++-16
 
-      - name: Install gcovr (Linux)
-        if: runner.os == 'Linux' && matrix.coverage
-        run: pip install gcovr
-
       - name: Install OpenCppCoverage (Windows)
         if: runner.os == 'Windows' && matrix.coverage
         run: choco install opencppcoverage -y
 
       # Ninja 1.13.2 is already pre-installed on macos-26 and windows-2025-vs2026
 
-      - name: Install Conan
-        run: pip install conan==2.*
+      - name: Set up Python with pip cache
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          cache: pip
+          cache-dependency-path: .github/requirements.txt
+
+      - name: Install Python tools
+        run: pip install -r .github/requirements.txt
 
       - name: Configure Conan profile
         run: conan profile detect --force
@@ -130,13 +133,23 @@ jobs:
         run: |
           echo "LLVM_ROOT=$(xcrun -f llvm-cov | xargs dirname)" >> $GITHUB_ENV
 
+      - name: Cache Conan packages
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.conan2/p
+            ~\AppData\Local\conan\p
+          key: conan-${{ matrix.name }}-${{ hashFiles('conanfile.txt') }}
+          restore-keys: conan-${{ matrix.name }}-
 
       - name: Set up ccache
         uses: actions/cache@v5
         with:
           path: ${{ runner.os == 'Windows' && '~\AppData\Local\ccache' || '~/.cache/ccache' }}
-          key: ccache-${{ matrix.name }}-${{ github.sha }}
-          restore-keys: ccache-${{ matrix.name }}-
+          key: ccache-${{ matrix.name }}-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ matrix.name }}-${{ github.ref_name }}-
+            ccache-${{ matrix.name }}-
 
       - name: Install dependencies with Conan
         run: >
