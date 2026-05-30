@@ -7,12 +7,12 @@
 #   OUTPUT        - path to write the JSON summary
 
 execute_process(
-				COMMAND ${LLVM_COV} export
-								-object ${TARGET_FILE}
-								-instr-profile=${PROFDATA}
-								-ignore-filename-regex=${IGNORE_REGEX}
-								-format=text
-								-summary-only
-				OUTPUT_FILE ${OUTPUT}
-				COMMAND_ERROR_IS_FATAL ANY
+                COMMAND ${LLVM_COV} export
+                                -object ${TARGET_FILE}
+                                -instr-profile=${PROFDATA}
+                                -ignore-filename-regex=${IGNORE_REGEX}
+                                -format=text
+                                -summary-only
+                OUTPUT_FILE ${OUTPUT}
+                COMMAND_ERROR_IS_FATAL ANY
 )

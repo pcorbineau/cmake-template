@@ -1,2 +1,4 @@
 command_upcase = "lower_case"
 line_max_words = 100
+tab_space_style = "space"
+indent_size = 4
