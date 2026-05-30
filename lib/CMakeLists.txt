@@ -94,7 +94,7 @@ elseif(UNIX)
 
         message(STATUS "coolgui: Linux backend = Wayland")
     else()
-        target_sources(coolgui PRIVATE src/platform_linux.cpp)
+        target_sources(coolgui PRIVATE src/platform_x11.cpp)
         target_link_libraries(coolgui PRIVATE X11)
         message(STATUS "coolgui: Linux backend = X11")
     endif()

@@ -13,6 +13,7 @@ namespace coolgui {
 struct WindowsHandle {
   HWND hwnd{nullptr};
   std::vector<Event> event_queue;
+  BackgroundColor bg_color{};
 };
 
 struct WindowsTraits {

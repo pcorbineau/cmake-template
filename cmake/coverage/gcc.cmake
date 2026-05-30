@@ -57,7 +57,7 @@ add_custom_target(
         ${CMAKE_BINARY_DIR}/coverage_report/index.html --json-summary
         ${CMAKE_BINARY_DIR}/coverage_report/summary.json --exclude-throw-branches
         --exclude-noncode-lines --exclude ${CMAKE_SOURCE_DIR}/tests/.* --exclude '.*/xdg-shell-.*'
-        --exclude '.*/platform_wayland\.cpp' --exclude '.*/platform_linux\.cpp' --root
+        --exclude '.*/platform_wayland\.cpp' --exclude '.*/platform_x11\.cpp' --root
         ${CMAKE_SOURCE_DIR}
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     DEPENDS

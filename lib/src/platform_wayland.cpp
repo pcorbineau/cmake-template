@@ -96,6 +96,7 @@ constexpr wl_registry_listener k_registry_listener{
 // ---------------------------------------------------------------------------
 auto WaylandTraits::create(WindowConfig cfg) -> Handle {
   auto state = std::make_unique<WaylandState>();
+  state->desired_bg_color = cfg.background_color;
 
   state->display = wl_display_connect(nullptr);
   if (state->display == nullptr) {
@@ -193,8 +194,11 @@ auto WaylandTraits::poll_event(Handle &handle) -> std::optional<Event> {
   return std::nullopt;
 }
 
-auto WaylandTraits::set_background_color(Handle & /*handle*/, BackgroundColor /*color*/) -> void {
-  // Background color changes on Wayland require a rendering context; stubbed for now.
+auto WaylandTraits::set_background_color(Handle &handle, BackgroundColor color) -> void {
+  if (handle.state != nullptr) {
+    handle.state->desired_bg_color = color;
+    LOGI("Wayland background color set ({}, {}, {})", color.red, color.green, color.blue);
+  }
 }
 
 } // namespace coolgui
