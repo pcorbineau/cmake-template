@@ -1,10 +1,23 @@
 cmake_minimum_required(VERSION 3.28)
 
+# ---------------------------------------------------------------------------
+# Build options
+# ---------------------------------------------------------------------------
+#conditional option include
+include(CMakeDependentOption)
 option(BUILD_TESTING "Build tests" ON)
+option(BUILD_EXAMPLE "Build the example application" ON)
 option(USE_CONAN "Use Conan for dependency management" ON)
 option(USE_CCACHE "Use ccache for faster builds" ON)
 option(USE_CLANG_TIDY "Use clang-tidy for static analysis" ON)
 option(ENABLE_COVERAGE "Enable code coverage analysis" OFF)
+cmake_dependent_option(
+    USE_WAYLAND
+    "Use Wayland for display server"
+    ON
+    "NOT WIN32 AND NOT APPLE"
+    OFF
+)
 
 if(USE_CLANG_TIDY AND ENABLE_COVERAGE)
     message(
@@ -27,6 +40,9 @@ include(compile-options)
 set(CMAKE_CXX_STANDARD 23)
 
 add_subdirectory(lib)
+if(BUILD_EXAMPLE)
+    add_subdirectory(example)
+endif()
 if(BUILD_TESTING)
     enable_testing()
     add_subdirectory(tests)

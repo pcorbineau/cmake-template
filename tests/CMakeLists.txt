@@ -1,20 +1,26 @@
 find_package(Catch2 CONFIG REQUIRED)
 
-add_executable(mylib_tests)
-target_sources(mylib_tests PRIVATE mylib_test.cpp)
+add_executable(coolgui_tests)
+target_sources(
+    coolgui_tests
+    PRIVATE
+        test_strong_type.cpp
+        test_window_config.cpp
+        test_window.cpp
+)
 
 target_link_libraries(
-    mylib_tests
+    coolgui_tests
     PRIVATE
-        mylib
+        coolgui
         Catch2::Catch2WithMain
 )
 
 include(Catch)
-catch_discover_tests(mylib_tests)
+catch_discover_tests(coolgui_tests)
 
-add_custom_target(run_tests COMMAND $<TARGET_FILE:mylib_tests> DEPENDS mylib_tests)
+add_custom_target(run_tests COMMAND $<TARGET_FILE:coolgui_tests> DEPENDS coolgui_tests)
 
 if(ENABLE_COVERAGE)
-    add_coverage_target(mylib_tests)
+    add_coverage_target(coolgui_tests)
 endif()

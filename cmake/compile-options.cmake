@@ -14,3 +14,5 @@ else()
         -Wsign-conversion
     )
 endif()
+
+add_compile_options($<$<PLATFORM_ID:Windows>:/EHsc>)

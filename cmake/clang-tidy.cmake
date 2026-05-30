@@ -12,4 +12,11 @@ if(NOT CLANG_TIDY_EXE)
     return()
 endif()
 
-set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
+if(WIN32)
+    set(CMAKE_CXX_CLANG_TIDY
+        "${CLANG_TIDY_EXE}"
+        "-extra-arg=/EHsc"
+    )
+else()
+    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
+endif()

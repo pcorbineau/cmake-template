@@ -41,7 +41,7 @@ file(
     _coverage_report_dir
 )
 
-set(coverage_target mylib_tests)
+set(coverage_target coolgui_tests)
 
 add_custom_target(
     coverage_cleanup
