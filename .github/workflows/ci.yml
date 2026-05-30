@@ -1,0 +1,164 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux GCC Debug
+            os: ubuntu-24.04
+            cc: gcc-16
+            cxx: g++-16
+            preset: debug
+            conan_build_type: Debug
+            coverage: false
+
+          - name: Linux GCC Release
+            os: ubuntu-24.04
+            cc: gcc-16
+            cxx: g++-16
+            preset: release
+            conan_build_type: Release
+            coverage: false
+
+          - name: Linux GCC Coverage
+            os: ubuntu-24.04
+            cc: gcc-16
+            cxx: g++-16
+            preset: coverage
+            conan_build_type: Debug
+            coverage: true
+
+          - name: macOS Clang Debug
+            os: macos-26
+            cc: clang
+            cxx: clang++
+            preset: debug
+            conan_build_type: Debug
+            coverage: false
+
+          - name: macOS Clang Release
+            os: macos-26
+            cc: clang
+            cxx: clang++
+            preset: release
+            conan_build_type: Release
+            coverage: false
+
+          - name: macOS Clang Coverage
+            os: macos-26
+            cc: clang
+            cxx: clang++
+            preset: coverage
+            conan_build_type: Debug
+            llvm: /Library/Developer/CommandLineTools/usr/bin
+            coverage: true
+
+          - name: Windows MSVC Debug
+            os: windows-2025-vs2026
+            preset: debug
+            conan_build_type: Debug
+            coverage: false
+
+          - name: Windows MSVC Release
+            os: windows-2025-vs2026
+            preset: release
+            conan_build_type: Release
+            coverage: false
+
+          - name: Windows MSVC Coverage
+            os: windows-2025-vs2026
+            preset: coverage
+            conan_build_type: Debug
+            coverage: true
+            coverage_name: msvc
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install Ninja (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y ninja-build
+
+      - name: Install GCC 16 (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+          sudo apt-get update -q
+          sudo apt-get install -y gcc-16 g++-16
+
+      - name: Install gcovr (Linux)
+        if: runner.os == 'Linux' && matrix.coverage
+        run: pip install gcovr
+
+      - name: Install OpenCppCoverage (Windows)
+        if: runner.os == 'Windows' && matrix.coverage
+        run: choco install opencppcoverage -y
+
+      # Ninja 1.13.2 is already pre-installed on macos-26 and windows-2025-vs2026
+
+      - name: Install Conan
+        run: pip install conan==2.*
+
+      - name: Configure Conan profile
+        run: conan profile detect --force
+
+      - name: Set up MSVC environment (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+          set >> %GITHUB_ENV%
+
+      - name: Set up Apple-Clang environment (macOS)
+        if: ${{ runner.os == 'macOS' && matrix.coverage }}
+        run: |
+          echo "LLVM_ROOT=$(xcrun -f llvm-cov | xargs dirname)" >> $GITHUB_ENV
+
+
+      - name: Set up ccache
+        uses: actions/cache@v5
+        with:
+          path: ${{ runner.os == 'Windows' && '~\AppData\Local\ccache' || '~/.cache/ccache' }}
+          key: ccache-${{ matrix.name }}-${{ github.sha }}
+          restore-keys: ccache-${{ matrix.name }}-
+
+      - name: Install dependencies with Conan
+        run: >
+          conan install . --build=missing
+          -s build_type=${{ matrix.conan_build_type }}
+          -c tools.cmake.cmaketoolchain:generator=Ninja
+          --profile:host=conan/profiles/ci
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+
+      - name: Configure
+        run: |
+          cmake --preset ${{ matrix.preset }} -DLLVM_ROOT=$LLVM_ROOT
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+
+      - name: Build
+        run: cmake --build build/
+
+      - name: Test
+        run: ctest --test-dir build/ --output-on-failure
+
+      - name: Coverage report
+        if: matrix.coverage
+        run: cmake --build build/ --target coverage

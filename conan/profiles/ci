@@ -1,0 +1,9 @@
+include(default)
+
+[settings]
+# MSVC uses "23", GCC/Clang use "gnu23" for GNU extensions
+{% if platform.system() == "Windows" %}
+compiler.cppstd=23
+{% else %}
+compiler.cppstd=gnu23
+{% endif %}
