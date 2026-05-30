@@ -17,6 +17,11 @@ endif()
 # Creates the 'coverage' custom target that builds, runs, and reports coverage
 # for the given test executable target. Must be called after the target is defined.
 function(add_coverage_target target)
-    target_compile_options(${target} PRIVATE ${COVERAGE_C_FLAGS} ${COVERAGE_CXX_FLAGS})
+    target_compile_options(
+        ${target}
+        PRIVATE
+            ${COVERAGE_C_FLAGS}
+            ${COVERAGE_CXX_FLAGS}
+    )
     target_link_libraries(${target} PRIVATE ${COVERAGE_LD_FLAGS})
 endfunction()

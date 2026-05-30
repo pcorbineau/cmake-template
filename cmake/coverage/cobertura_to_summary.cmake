@@ -4,7 +4,12 @@
 #   COBERTURA_XML - path to the Cobertura XML file produced by OpenCppCoverage
 #   OUTPUT        - path to write the JSON summary
 
-find_program(PYTHON3 NAMES python3 python)
+find_program(
+    PYTHON3
+    NAMES
+        python3
+        python
+)
 if(NOT PYTHON3)
     message(
         FATAL_ERROR
