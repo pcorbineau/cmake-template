@@ -56,7 +56,9 @@ add_custom_target(
         ${GCOVR_EXECUTABLE} --gcov-executable ${GCOV_EXECUTABLE_PATH} --html-details
         ${CMAKE_BINARY_DIR}/coverage_report/index.html --json-summary
         ${CMAKE_BINARY_DIR}/coverage_report/summary.json --exclude-throw-branches
-        --exclude-noncode-lines --exclude ${CMAKE_SOURCE_DIR}/tests/.* --root ${CMAKE_SOURCE_DIR}
+        --exclude-noncode-lines --exclude ${CMAKE_SOURCE_DIR}/tests/.* --exclude '.*/xdg-shell-.*'
+        --exclude '.*/platform_wayland\.cpp' --exclude '.*/platform_linux\.cpp' --root
+        ${CMAKE_SOURCE_DIR}
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     DEPENDS
         ${coverage_target}
