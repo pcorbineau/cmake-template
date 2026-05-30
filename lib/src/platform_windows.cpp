@@ -21,7 +21,7 @@ auto wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT {
   switch (msg) {
   case WM_CLOSE:
     if (handle != nullptr) {
-      handle->close_requested = true;
+      handle->event_queue.emplace_back(coolgui::CloseEvent{});
     }
     return 0;
   case WM_DESTROY:
@@ -86,14 +86,24 @@ auto WindowsTraits::poll_event(Handle &handle) -> std::optional<Event> {
     return std::nullopt;
   }
 
-  if (handle.close_requested) {
-    return Event{CloseEvent{}};
+  // Pop queued events first (pushed by wnd_proc callbacks)
+  if (!handle.event_queue.empty()) {
+    auto evt = handle.event_queue.front();
+    handle.event_queue.erase(handle.event_queue.begin());
+    return evt;
   }
 
   MSG msg{};
   if (PeekMessageW(&msg, handle.hwnd, 0, 0, PM_REMOVE) != 0) {
     TranslateMessage(&msg);
     DispatchMessageW(&msg);
+
+    // After dispatching, the callback may have pushed to the queue
+    if (!handle.event_queue.empty()) {
+      auto evt = handle.event_queue.front();
+      handle.event_queue.erase(handle.event_queue.begin());
+      return evt;
+    }
 
     if (msg.message == WM_SIZE) {
       return Event{ResizeEvent{

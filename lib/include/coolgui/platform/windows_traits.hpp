@@ -3,6 +3,7 @@
 #include <windows.h>
 
 #include <optional>
+#include <vector>
 
 #include "coolgui/events.hpp"
 #include "coolgui/window_config.hpp"
@@ -11,7 +12,7 @@ namespace coolgui {
 
 struct WindowsHandle {
   HWND hwnd{nullptr};
-  bool close_requested{false};
+  std::vector<Event> event_queue;
 };
 
 struct WindowsTraits {
