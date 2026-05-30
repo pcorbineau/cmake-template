@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Install neocmakelsp
         run: |
@@ -23,8 +25,10 @@ jobs:
 
       - name: Check CMake formatting
         run: |
-          find . -name 'CMakeLists.txt' -o -name '*.cmake' \
-            | xargs neocmakelsp format -i
+          files=$(git diff --name-only --diff-filter=ACM origin/${{ github.base_ref }} \
+            -- '*.cmake' '*CMakeLists.txt')
+          [ -z "$files" ] && exit 0
+          echo "$files" | xargs neocmakelsp format -i
           git diff --exit-code
 
   yaml:
@@ -33,12 +37,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Install yamllint
         run: pip install yamllint
 
       - name: Check YAML formatting
-        run: yamllint -c .yamllint.yml .github/
+        run: |
+          files=$(git diff --name-only --diff-filter=ACM origin/${{ github.base_ref }} \
+            -- '*.yml' '*.yaml')
+          [ -z "$files" ] && exit 0
+          echo "$files" | xargs yamllint -c .yamllint.yml
 
   python:
     name: Python (ruff)
@@ -46,9 +56,38 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Install ruff
         run: pip install ruff
 
       - name: Check Python formatting
-        run: ruff format --check .
+        run: |
+          files=$(git diff --name-only --diff-filter=ACM origin/${{ github.base_ref }} \
+            -- '*.py')
+          [ -z "$files" ] && exit 0
+          echo "$files" | xargs ruff format --check
+
+  cpp:
+    name: C++ (clang-format)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install clang-format and clang-format-diff
+        run: |
+          pip install clang-format
+          base="https://raw.githubusercontent.com/llvm/llvm-project/main"
+          curl -fsSL "$base/clang/tools/clang-format/clang-format-diff.py" \
+            -o /usr/local/bin/clang-format-diff
+          chmod +x /usr/local/bin/clang-format-diff
+
+      - name: Check formatting
+        run: |
+          git diff -U0 origin/${{ github.base_ref }} -- '*.cpp' '*.hpp' \
+            | clang-format-diff -p1 -style file | tee /tmp/clang-format.patch
+          test ! -s /tmp/clang-format.patch
