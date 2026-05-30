@@ -3,6 +3,7 @@
 #include <optional>
 #include <utility>
 
+#include "coolgui/color_panel.hpp"
 #include "coolgui/events.hpp"
 #include "coolgui/log.hpp"
 #include "coolgui/window_config.hpp"
@@ -82,6 +83,15 @@ public:
 
   [[nodiscard]] constexpr auto is_open() const noexcept -> bool { return open_; }
   [[nodiscard]] constexpr auto traits() const noexcept -> const Traits & { return traits_; }
+
+  // Platform-specific overlay rendering. No-op on platforms without support.
+  auto render_color_panel(const ColorPanel &panel) -> void {
+    if constexpr (requires { traits_.render_color_panel(handle_, panel); }) {
+      if (open_) {
+        traits_.render_color_panel(handle_, panel);
+      }
+    }
+  }
 };
 
 } // namespace coolgui

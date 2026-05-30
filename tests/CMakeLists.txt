@@ -4,7 +4,9 @@ add_executable(coolgui_tests)
 target_sources(
     coolgui_tests
     PRIVATE
+        test_color_panel.cpp
         test_strong_type.cpp
+        test_widget_types.cpp
         test_window_config.cpp
         test_window.cpp
 )

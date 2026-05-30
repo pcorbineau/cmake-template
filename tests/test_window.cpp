@@ -122,3 +122,39 @@ TEST_CASE("BasicWindow run dispatches CursorMoveEvent then CloseEvent", "[BasicW
   REQUIRE(cursor_calls == 1);
   REQUIRE_FALSE(win.is_open());
 }
+
+TEST_CASE("BasicWindow poll returns MouseButtonEvent", "[BasicWindow][MouseButton]") {
+  coolgui::BasicWindow<mock::Traits> win{k_cfg, mock::Traits{mock::Scenario::ThenMouseClick}};
+
+  auto evt = win.poll();
+  auto evt_val = evt.value_or(coolgui::Event{coolgui::CloseEvent{}});
+  auto const *mb = std::get_if<coolgui::MouseButtonEvent>(&evt_val);
+  REQUIRE(mb != nullptr);
+  REQUIRE(mb->button == coolgui::MouseButton::Left);
+  REQUIRE(mb->x == 50.0);
+  REQUIRE(mb->y == 60.0);
+  REQUIRE(win.is_open());
+}
+
+TEST_CASE("BasicWindow poll returns TextInputEvent", "[BasicWindow][TextInput]") {
+  coolgui::BasicWindow<mock::Traits> win{k_cfg, mock::Traits{mock::Scenario::ThenTextInput}};
+
+  auto evt = win.poll();
+  auto evt_val = evt.value_or(coolgui::Event{coolgui::CloseEvent{}});
+  auto const *ti = std::get_if<coolgui::TextInputEvent>(&evt_val);
+  REQUIRE(ti != nullptr);
+  REQUIRE(ti->character == 'a');
+  REQUIRE(win.is_open());
+}
+
+TEST_CASE("BasicWindow run dispatches MouseButtonEvent then CloseEvent", "[BasicWindow][MouseButton]") {
+  coolgui::BasicWindow<mock::Traits> win{k_cfg, mock::Traits{mock::Scenario::ThenMouseThenClose}};
+
+  i32 mouse_calls = 0;
+  win.run([&](const coolgui::Event &event) -> void {
+    if (std::holds_alternative<coolgui::MouseButtonEvent>(event)) { ++mouse_calls; }
+  });
+
+  REQUIRE(mouse_calls == 1);
+  REQUIRE_FALSE(win.is_open());
+}
