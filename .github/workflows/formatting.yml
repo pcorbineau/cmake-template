@@ -1,0 +1,54 @@
+name: Formatting
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  cmake:
+    name: CMake (neocmakelsp)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install neocmakelsp
+        run: |
+          url="https://github.com/neocmakelsp/neocmakelsp/releases/latest/download"
+          curl -fsSL "$url/neocmakelsp-x86_64-unknown-linux-gnu.tar.gz" \
+            | tar -xz -C /usr/local/bin
+
+      - name: Check CMake formatting
+        run: |
+          find . -name 'CMakeLists.txt' -o -name '*.cmake' \
+            | xargs neocmakelsp format -i
+          git diff --exit-code
+
+  yaml:
+    name: YAML (yamllint)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Check YAML formatting
+        run: yamllint -c .yamllint.yml .github/
+
+  python:
+    name: Python (ruff)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Check Python formatting
+        run: ruff format --check .
