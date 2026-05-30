@@ -3,29 +3,29 @@
 #include "coolgui/window.hpp"
 
 #if defined(__APPLE__)
-#    include "coolgui/platform/macos_traits.hpp"
+#include "coolgui/platform/macos_traits.hpp"
 namespace coolgui {
 using NativeTraits = MacosTraits;
 }
 #elif defined(__linux__)
-#    if defined(COOLGUI_USE_WAYLAND)
-#        include "coolgui/platform/wayland_traits.hpp"
+#if defined(COOLGUI_USE_WAYLAND)
+#include "coolgui/platform/wayland_traits.hpp"
 namespace coolgui {
 using NativeTraits = WaylandTraits;
 }
-#    else
-#        include "coolgui/platform/linux_traits.hpp"
+#else
+#include "coolgui/platform/linux_traits.hpp"
 namespace coolgui {
 using NativeTraits = LinuxTraits;
 }
-#    endif
+#endif
 #elif defined(_WIN32)
-#    include "coolgui/platform/windows_traits.hpp"
+#include "coolgui/platform/windows_traits.hpp"
 namespace coolgui {
 using NativeTraits = WindowsTraits;
 }
 #else
-#    error "Unsupported platform"
+#error "Unsupported platform"
 #endif
 
 namespace coolgui {

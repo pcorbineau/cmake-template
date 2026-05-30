@@ -9,8 +9,8 @@ namespace coolgui {
 struct CloseEvent {};
 
 struct ResizeEvent {
-    Width  width;
-    Height height;
+  Width width;
+  Height height;
 };
 
 using Event = std::variant<CloseEvent, ResizeEvent>;

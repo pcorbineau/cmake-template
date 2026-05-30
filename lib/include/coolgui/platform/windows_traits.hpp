@@ -10,16 +10,16 @@
 namespace coolgui {
 
 struct WindowsHandle {
-    HWND hwnd{ nullptr };
-    bool close_requested{ false };
+  HWND hwnd{nullptr};
+  bool close_requested{false};
 };
 
 struct WindowsTraits {
-    using Handle = WindowsHandle;
+  using Handle = WindowsHandle;
 
-    auto create(WindowConfig cfg) -> Handle;
-    auto destroy(Handle& handle) -> void;
-    auto poll_event(Handle& handle) -> std::optional<Event>;
+  auto create(WindowConfig cfg) -> Handle;
+  auto destroy(Handle &handle) -> void;
+  auto poll_event(Handle &handle) -> std::optional<Event>;
 };
 
 } // namespace coolgui

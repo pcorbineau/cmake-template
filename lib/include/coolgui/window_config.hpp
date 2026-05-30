@@ -5,9 +5,9 @@
 namespace coolgui {
 
 struct WindowConfig {
-    Width  width;
-    Height height;
-    Title  title;
+  Width width;
+  Height height;
+  Title title;
 };
 
 } // namespace coolgui

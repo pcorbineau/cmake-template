@@ -28,7 +28,7 @@ template <typename... Args> constexpr void LOGV(spdlog::format_string_t<Args...>
   }
 }
 
-template <typename... Args> constexpr void LOGW(spdlog::format_string_t<Args...> fmt, Args&&... args) {
+template <typename... Args> constexpr void LOGW(spdlog::format_string_t<Args...> fmt, Args &&...args) {
   if consteval {
     // compile-time: no-op
   } else {
@@ -36,7 +36,7 @@ template <typename... Args> constexpr void LOGW(spdlog::format_string_t<Args...>
   }
 }
 
-template <typename... Args> constexpr void LOGF(spdlog::format_string_t<Args...> fmt, Args&&... args) {
+template <typename... Args> constexpr void LOGF(spdlog::format_string_t<Args...> fmt, Args &&...args) {
   if consteval {
     // compile time: no-op
   } else {

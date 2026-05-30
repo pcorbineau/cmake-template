@@ -31,7 +31,13 @@ target_link_libraries(coolgui PUBLIC spdlog::spdlog)
 if(APPLE)
     target_link_libraries(coolgui PRIVATE "-framework Cocoa")
 elseif(WIN32)
-    target_compile_definitions(coolgui PUBLIC WIN32_LEAN_AND_MEAN NOMINMAX UNICODE)
+    target_compile_definitions(
+        coolgui
+        PUBLIC
+            WIN32_LEAN_AND_MEAN
+            NOMINMAX
+            UNICODE
+    )
 elseif(UNIX)
     if(USE_WAYLAND)
         find_package(PkgConfig REQUIRED)
@@ -50,15 +56,21 @@ elseif(UNIX)
         set(XDG_SHELL_SOURCE "${CMAKE_CURRENT_BINARY_DIR}/xdg-shell-protocol.c")
 
         add_custom_command(
-            OUTPUT "${XDG_SHELL_HEADER}"
-            COMMAND "${WAYLAND_SCANNER}" client-header "${XDG_SHELL_XML}" "${XDG_SHELL_HEADER}"
-            DEPENDS "${XDG_SHELL_XML}"
+            OUTPUT
+                "${XDG_SHELL_HEADER}"
+            COMMAND
+                "${WAYLAND_SCANNER}" client-header "${XDG_SHELL_XML}" "${XDG_SHELL_HEADER}"
+            DEPENDS
+                "${XDG_SHELL_XML}"
             COMMENT "Generating xdg-shell-client-protocol.h"
         )
         add_custom_command(
-            OUTPUT "${XDG_SHELL_SOURCE}"
-            COMMAND "${WAYLAND_SCANNER}" private-code "${XDG_SHELL_XML}" "${XDG_SHELL_SOURCE}"
-            DEPENDS "${XDG_SHELL_XML}"
+            OUTPUT
+                "${XDG_SHELL_SOURCE}"
+            COMMAND
+                "${WAYLAND_SCANNER}" private-code "${XDG_SHELL_XML}" "${XDG_SHELL_SOURCE}"
+            DEPENDS
+                "${XDG_SHELL_XML}"
             COMMENT "Generating xdg-shell-protocol.c"
         )
 
