@@ -2,6 +2,7 @@ if(MSVC)
     add_compile_options(
         /W4
         /WX
+        /EHsc
     )
 else()
     add_compile_options(

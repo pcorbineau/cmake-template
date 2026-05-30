@@ -79,6 +79,7 @@ elseif(UNIX)
             PRIVATE
                 src/platform_wayland.cpp
                 "${XDG_SHELL_SOURCE}"
+                "${XDG_SHELL_HEADER}"
         )
 
         target_include_directories(
