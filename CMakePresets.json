@@ -19,7 +19,8 @@
 			"name": "release",
 			"inherits": "default",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo",
+				"BUILD_TESTING": "OFF"
 			}
 		},
 		{
