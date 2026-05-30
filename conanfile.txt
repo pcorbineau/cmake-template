@@ -1,5 +1,6 @@
 [requires]
 catch2/3.15.0
+spdlog/1.15.3
 
 [generators]
 CMakeConfigDeps
