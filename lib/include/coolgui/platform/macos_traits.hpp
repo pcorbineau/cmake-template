@@ -28,6 +28,7 @@ struct MacosTraits {
   static auto create(WindowConfig cfg) -> Handle;
   static auto destroy(Handle &handle) -> void;
   static auto poll_event(Handle &handle) -> std::optional<Event>;
+  static auto set_background_color(Handle &handle, BackgroundColor color) -> void;
 };
 
 } // namespace coolgui

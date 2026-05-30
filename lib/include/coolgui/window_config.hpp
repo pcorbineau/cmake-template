@@ -8,6 +8,7 @@ struct WindowConfig {
   Width width;
   Height height;
   Title title;
+  BackgroundColor background_color{};
 };
 
 } // namespace coolgui

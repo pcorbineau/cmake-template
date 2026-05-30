@@ -9,14 +9,16 @@ namespace coolgui {
 
 // A platform traits type must provide:
 //   - a Handle type (default-constructible)
-//   - create(WindowConfig)   -> Handle
-//   - destroy(Handle&)       -> void
-//   - poll_event(Handle&)    -> std::optional<Event>
+//   - create(WindowConfig)          -> Handle
+//   - destroy(Handle&)              -> void
+//   - poll_event(Handle&)           -> std::optional<Event>
+//   - set_background_color(Handle&, BackgroundColor) -> void
 template <typename T>
-concept WindowTraits = requires(T t, T::Handle &h, WindowConfig cfg) {
+concept WindowTraits = requires(T t, T::Handle &h, WindowConfig cfg, BackgroundColor color) {
   { t.create(cfg) } -> std::same_as<typename T::Handle>;
   { t.destroy(h) } -> std::same_as<void>;
   { t.poll_event(h) } -> std::same_as<std::optional<Event>>;
+  { t.set_background_color(h, color) } -> std::same_as<void>;
 };
 
 } // namespace coolgui

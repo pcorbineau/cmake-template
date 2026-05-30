@@ -14,9 +14,9 @@ namespace coolgui {
 using NativeTraits = WaylandTraits;
 }
 #else
-#include "coolgui/platform/linux_traits.hpp"
+#include "coolgui/platform/x11_traits.hpp"
 namespace coolgui {
-using NativeTraits = LinuxTraits;
+using NativeTraits = X11Traits;
 }
 #endif
 #elif defined(_WIN32)
