@@ -5,7 +5,7 @@ A modern C++23 cross-platform static library template using CMake, Conan 2, and 
 [![CI](https://github.com/pcorbineau/cmake-template/actions/workflows/ci.yml/badge.svg)](https://github.com/pcorbineau/cmake-template/actions/workflows/ci.yml)
 [![Formatting](https://github.com/pcorbineau/cmake-template/actions/workflows/formatting.yml/badge.svg)](https://github.com/pcorbineau/cmake-template/actions/workflows/formatting.yml)
 [![Commitlint](https://github.com/pcorbineau/cmake-template/actions/workflows/commitlint.yml/badge.svg)](https://github.com/pcorbineau/cmake-template/actions/workflows/commitlint.yml)
-[![Coverage](https://pcorbineau.github.io/cmake-template/coverage-badge.svg)](https://pcorbineau.github.io/cmake-template/)
+[![Coverage](https://img.shields.io/badge/coverage-report-blue)](https://pcorbineau.github.io/cmake-template/)
 
 ## Features
 
