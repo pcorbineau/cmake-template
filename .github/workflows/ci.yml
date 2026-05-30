@@ -1,208 +1,232 @@
-name : CI
+name: CI
 
-           on : push : branches : [main] pull_request : branches : [main]
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
-                                                                   permissions : contents : read pages : write id -
-                                                                                                         token
-    : write
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
-          jobs : build : name : $ {
-  {
-    matrix.os.name
-  }
-}
-$ {
-  {
-    matrix.build.preset
-  }
-}
-runs - on : $ {
-  {
-    matrix.os.runner
-  }
-}
-strategy : fail - fast : false matrix : os : -name : Linux GCC runner : ubuntu - 24.04 cc : gcc -
-                                                                                            16 cxx : g++ -
-                                                                                                     16 coverage_name
-    : gcc preset_suffix : "" multi_config : false conan_cmake_generator : Ninja setup_msvc : false conan_cache_path
-    : ~/.conan2 /
-      p - name : macOS Clang runner : macos -
-                                      26 cc : clang cxx : clang++ coverage_name : clang preset_suffix : "" multi_config
-    : false conan_cmake_generator : Ninja setup_msvc : false conan_cache_path : ~/.conan2 /
-                                                                                p -
-                                      name : Windows MSVC Ninja runner : windows - 2025 -
-                                                                         vs2026 coverage_name : msvc preset_suffix
-    : "" multi_config : false conan_cmake_generator : Ninja setup_msvc : true conan_cache_path
-    : ~\.conan2\p - name : Windows MSVC VS runner : windows -
-                                                    2025 -
-                                                    vs2026 preset_suffix : "-vs" multi_config
-    : true conan_cmake_generator : Visual Studio 18 2026 setup_msvc : false conan_cache_path : ~\.conan2\p build
-    : -preset : debug conan_build_type : Debug cmake_build_config : Debug coverage
-    : false - preset : release conan_build_type : Release cmake_build_config : Release coverage : false -
-                                                                                                  preset
-    : coverage conan_build_type : Debug cmake_build_config : Debug coverage : true exclude : -os : name
-    : Windows MSVC VS build : preset : coverage
+jobs:
+  build:
+    name: ${{ matrix.os.name }} ${{ matrix.build.preset }}
+    runs-on: ${{ matrix.os.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - name: Linux GCC
+            runner: ubuntu-24.04
+            cc: gcc-16
+            cxx: g++-16
+            coverage_name: gcc
+            preset_suffix: ""
+            multi_config: false
+            conan_cmake_generator: Ninja
+            setup_msvc: false
+            conan_cache_path: ~/.conan2/p
+          - name: macOS Clang
+            runner: macos-26
+            cc: clang
+            cxx: clang++
+            coverage_name: clang
+            preset_suffix: ""
+            multi_config: false
+            conan_cmake_generator: Ninja
+            setup_msvc: false
+            conan_cache_path: ~/.conan2/p
+          - name: Windows MSVC Ninja
+            runner: windows-2025-vs2026
+            coverage_name: msvc
+            preset_suffix: ""
+            multi_config: false
+            conan_cmake_generator: Ninja
+            setup_msvc: true
+            conan_cache_path: ~\.conan2\p
+          - name: Windows MSVC VS
+            runner: windows-2025-vs2026
+            preset_suffix: "-vs"
+            multi_config: true
+            conan_cmake_generator: Visual Studio 18 2026
+            setup_msvc: false
+            conan_cache_path: ~\.conan2\p
+        build:
+          - preset: debug
+            conan_build_type: Debug
+            cmake_build_config: Debug
+            coverage: false
+          - preset: release
+            conan_build_type: Release
+            cmake_build_config: Release
+            coverage: false
+          - preset: coverage
+            conan_build_type: Debug
+            cmake_build_config: Debug
+            coverage: true
+        exclude:
+          - os:
+              name: Windows MSVC VS
+            build:
+              preset: coverage
 
-                                           steps : -name : Checkout uses : actions /
-                                                                           checkout @v6
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
 
-                                                                                                  -
-                                                                                                  name : Install
-                                                                                                         Ninja(Linux) if
-    : runner.os
-            ==
-            'Linux' run : sudo apt - get install - y ninja - build
+      - name: Install Ninja (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y ninja-build
 
-                          -
-                          name : Install GCC 16(Linux) if : runner.os
-            ==
-            'Linux' run : |
-                          sudo add - apt - repository ppa : ubuntu - toolchain - r / test - y sudo apt - get update -
-                                                            q sudo apt - get install - y gcc - 16 g++ - 16
+      - name: Install GCC 16 (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+          sudo apt-get update -q
+          sudo apt-get install -y gcc-16 g++-16
 
-                                                            -
-                                                            name : Install Linux windowing dependencies if : runner.os
-                              ==
-                              'Linux' run : sudo apt - get install - y libx11 - dev libwayland - dev wayland - protocols
+      - name: Install Linux windowing dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y libx11-dev libwayland-dev wayland-protocols
 
-                                            -
-                                            name : Install OpenCppCoverage(Windows) if : runner.os
-                              == 'Windows' &&
-    matrix.build.coverage run : choco install opencppcoverage - y
+      - name: Install OpenCppCoverage (Windows)
+        if: runner.os == 'Windows' && matrix.build.coverage
+        run: choco install opencppcoverage -y
 
-            - name : Set up Python with pip cache uses : actions / setup - python @v5 with : python -
-                                                                                             version : '3.x' cache
-    : pip cache
-      -
-      dependency - path :.github / requirements.txt
+      - name: Set up Python with pip cache
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          cache: pip
+          cache-dependency-path: .github/requirements.txt
 
-      -
-      name : Install Python tools run : pip install - r.github / requirements.txt
+      - name: Install Python tools
+        run: pip install -r .github/requirements.txt
 
-                                        -
-                                        name : Configure Conan profile run
-    : conan profile detect-- force
+      - name: Configure Conan profile
+        run: conan profile detect --force
 
-      -
-      name : Set up MSVC environment(Windows Ninja) if : matrix.os.setup_msvc shell : cmd run
-    : |
-      call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64 set >>
-              % GITHUB_ENV %
+      - name: Set up MSVC environment (Windows Ninja)
+        if: matrix.os.setup_msvc
+        shell: cmd
+        run: |
+          call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+          set >> %GITHUB_ENV%
 
-                  -name : Detect LLVM root(macOS) if : runner.os
-          == 'macOS' &&
-    matrix.build.coverage run : echo "LLVM_ROOT=$(xcrun -f llvm-cov | xargs dirname)" >>
-        $GITHUB_ENV
+      - name: Detect LLVM root (macOS)
+        if: runner.os == 'macOS' && matrix.build.coverage
+        run: echo "LLVM_ROOT=$(xcrun -f llvm-cov | xargs dirname)" >> $GITHUB_ENV
 
-            - name : Cache Conan packages uses : actions / cache @v5 with : path : $ {
-  {
-    matrix.os.conan_cache_path
-  }
-}
-key : conan - ${{matrix.os.name}} - ${{matrix.build.conan_build_type}} - $ {
-  {
-    hashFiles('conanfile.txt')
-  }
-}
-restore - keys : conan - ${{matrix.os.name}} - ${{matrix.build.conan_build_type}} -
+      - name: Cache Conan packages
+        uses: actions/cache@v5
+        with:
+          path: ${{ matrix.os.conan_cache_path }}
+          key: conan-${{ matrix.os.name }}-${{ matrix.build.conan_build_type }}-${{ hashFiles('conanfile.txt') }}
+          restore-keys: conan-${{ matrix.os.name }}-${{ matrix.build.conan_build_type }}-
 
-                 -name : Set up ccache uses : actions / cache @v5 with : path : $ {{ runner.os == 'Windows' && '~\AppData\Local\ccache' || '~/.cache/ccache' }}
-key : ccache - ${{matrix.os.name}} - ${{github.ref_name}} - $ {
-  {
-    github.sha
-  }
-}
-restore - keys : | ccache - ${{matrix.os.name}} - ${{github.ref_name}} - ccache - ${{matrix.os.name}} -
+      - name: Set up ccache
+        uses: actions/cache@v5
+        with:
+          path: ${{ runner.os == 'Windows' && '~\AppData\Local\ccache' || '~/.cache/ccache' }}
+          key: ccache-${{ matrix.os.name }}-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ matrix.os.name }}-${{ github.ref_name }}-
+            ccache-${{ matrix.os.name }}-
 
-                           -name : Install dependencies with Conan run : >
-                                                                         conan install.--build =
-    missing - s build_type = ${{matrix.build.conan_build_type}} - c
-                             "tools.cmake.cmaketoolchain:generator=${{ matrix.os.conan_cmake_generator }}" --profile
-    : host = conan / profiles / ci env : CC : $ {
-  {
-    matrix.os.cc
-  }
-}
-CXX : ${{matrix.os.cxx}}
+      - name: Install dependencies with Conan
+        run: >
+          conan install . --build=missing
+          -s build_type=${{ matrix.build.conan_build_type }}
+          -c "tools.cmake.cmaketoolchain:generator=${{ matrix.os.conan_cmake_generator }}"
+          --profile:host=conan/profiles/ci
+        env:
+          CC: ${{ matrix.os.cc }}
+          CXX: ${{ matrix.os.cxx }}
 
-      -
-      name : Configure run : cmake-- preset $ {
-  {
-    matrix.build.preset
-  }
-}
-$ {
-  {
-    matrix.os.preset_suffix
-  }
-}
-env : CC : $ {
-  {
-    matrix.os.cc
-  }
-}
-CXX : ${{matrix.os.cxx}}
+      - name: Configure
+        run: cmake --preset ${{ matrix.build.preset }}${{ matrix.os.preset_suffix }}
+        env:
+          CC: ${{ matrix.os.cc }}
+          CXX: ${{ matrix.os.cxx }}
 
-      -
-      name : Build run
-    : >
-      cmake-- build build /
-              ${{matrix.os.multi_config && format('--config {0}', matrix.build.cmake_build_config) || '' }}
+      - name: Build
+        run: >
+          cmake --build build/
+          ${{ matrix.os.multi_config && format('--config {0}', matrix.build.cmake_build_config) || '' }}
 
-          - name : Test run
-    : >
-      ctest-- test - dir build / --output - on -
-          failure ${{matrix.os.multi_config && format('--build-config {0}', matrix.build.cmake_build_config) || '' }}
+      - name: Test
+        run: >
+          ctest --test-dir build/ --output-on-failure
+          ${{ matrix.os.multi_config && format('--build-config {0}', matrix.build.cmake_build_config) || '' }}
 
-          - name : Coverage report if : matrix.build.coverage run : cmake-- build build / --target coverage
+      - name: Coverage report
+        if: matrix.build.coverage
+        run: cmake --build build/ --target coverage
 
-          - name : Upload coverage report artifact if : matrix.build.coverage &&github.ref ==
-    'refs/heads/main' uses : actions / upload - artifact @v7 with : name : coverage - $ {
-  {
-    matrix.os.coverage_name
-  }
-}
-path : build / coverage_report / retention -
-        days : 1
+      - name: Upload coverage report artifact
+        if: matrix.build.coverage && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-${{ matrix.os.coverage_name }}
+          path: build/coverage_report/
+          retention-days: 1
 
-        deploy -
-        coverage : name : Deploy coverage page needs : build runs - on : ubuntu - 24.04 if : github.ref ==
-    'refs/heads/main' environment : name : github - pages url : $ {
-  {
-    steps.deploy.outputs.page_url
-  }
-}
-steps : -name : Checkout uses : actions / checkout @v6
+  deploy-coverage:
+    name: Deploy coverage page
+    needs: build
+    runs-on: ubuntu-24.04
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
 
-        - name : Download clang coverage report uses : actions / download -
-        artifact @v8 with : name : coverage -
-                                   clang path : pages / clang /
+      - name: Download clang coverage report
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage-clang
+          path: pages/clang/
 
-                                                -name : Download gcc coverage report uses : actions / download -
-                                   artifact @v8 with : name
-    : coverage -
-      gcc path : pages / gcc /
+      - name: Download gcc coverage report
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage-gcc
+          path: pages/gcc/
 
-                 -name : Download msvc coverage report uses : actions / download -
-      artifact @v8 with : name
-    : coverage -
-      msvc path : pages / msvc /
+      - name: Download msvc coverage report
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage-msvc
+          path: pages/msvc/
 
-                  -name : Create landing page run : cp.github / pages / index.html pages / index.html
+      - name: Create landing page
+        run: cp .github/pages/index.html pages/index.html
 
-      -
-      name : Generate coverage summary run : python3.github / scripts / merge_coverage_summary.py
+      - name: Generate coverage summary
+        run: python3 .github/scripts/merge_coverage_summary.py
 
-      -
-      name : Upload pages artifact uses : actions / upload - pages -
-      artifact @v5 with : path : pages /
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: pages/
 
-                                 -name : Deploy to GitHub Pages id : deploy uses : actions / deploy -
-      pages @v5
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v5
 
-          ci : name : Build needs : [build] runs -
-                                    on : ubuntu -
-                                         24.04 if : always() steps : -name : Check all jobs passed run
-    : |
-      if[["${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "true"]];
-then exit 1 fi
+  ci:
+    name: Build
+    needs: [build]
+    runs-on: ubuntu-24.04
+    if: always()
+    steps:
+      - name: Check all jobs passed
+        run: |
+          if [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+            exit 1
+          fi
