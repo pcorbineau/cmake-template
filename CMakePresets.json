@@ -31,6 +31,27 @@
 				"USE_CLANG_TIDY": "OFF",
 				"LLVM_ROOT": "$env{LLVM_ROOT}"
 			}
+		},
+		{
+			"name": "windows-vs",
+			"hidden": true,
+			"generator": "Visual Studio 18 2026",
+			"binaryDir": "${sourceDir}/build/",
+			"cacheVariables": {
+				"USE_CLANG_TIDY": "OFF",
+				"USE_CCACHE": "OFF"
+			}
+		},
+		{
+			"name": "debug-vs",
+			"inherits": "windows-vs"
+		},
+		{
+			"name": "release-vs",
+			"inherits": "windows-vs",
+			"cacheVariables": {
+				"BUILD_TESTING": "OFF"
+			}
 		}
 	]
 }

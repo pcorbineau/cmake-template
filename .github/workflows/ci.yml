@@ -24,24 +24,38 @@ jobs:
             cc: gcc-16
             cxx: g++-16
             coverage_name: gcc
+            preset_suffix: ""
+            multi_config: false
           - name: macOS Clang
             runner: macos-26
             cc: clang
             cxx: clang++
             coverage_name: clang
+            preset_suffix: ""
+            multi_config: false
           - name: Windows MSVC
             runner: windows-2025-vs2026
             coverage_name: msvc
+            preset_suffix: "-vs"
+            multi_config: true
         build:
           - preset: debug
             conan_build_type: Debug
+            cmake_build_config: Debug
             coverage: false
           - preset: release
             conan_build_type: Release
+            cmake_build_config: Release
             coverage: false
           - preset: coverage
             conan_build_type: Debug
+            cmake_build_config: Debug
             coverage: true
+        exclude:
+          - os:
+              name: Windows MSVC
+            build:
+              preset: coverage
 
     steps:
       - name: Checkout
@@ -62,8 +76,6 @@ jobs:
         if: runner.os == 'Windows' && matrix.build.coverage
         run: choco install opencppcoverage -y
 
-      # Ninja 1.13.2 is already pre-installed on macos-26 and windows-2025-vs2026
-
       - name: Set up Python with pip cache
         uses: actions/setup-python@v5
         with:
@@ -76,13 +88,6 @@ jobs:
 
       - name: Configure Conan profile
         run: conan profile detect --force
-
-      - name: Set up MSVC environment (Windows)
-        if: runner.os == 'Windows'
-        shell: cmd
-        run: |
-          call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
-          set >> %GITHUB_ENV%
 
       - name: Detect LLVM root (macOS)
         if: runner.os == 'macOS' && matrix.build.coverage
@@ -106,7 +111,8 @@ jobs:
             ccache-${{ matrix.os.name }}-${{ github.ref_name }}-
             ccache-${{ matrix.os.name }}-
 
-      - name: Install dependencies with Conan
+      - name: Install dependencies with Conan (Linux / macOS)
+        if: runner.os != 'Windows'
         run: >
           conan install . --build=missing
           -s build_type=${{ matrix.build.conan_build_type }}
@@ -116,17 +122,29 @@ jobs:
           CC: ${{ matrix.os.cc }}
           CXX: ${{ matrix.os.cxx }}
 
+      - name: Install dependencies with Conan (Windows)
+        if: runner.os == 'Windows'
+        run: >
+          conan install . --build=missing
+          -s build_type=${{ matrix.build.conan_build_type }}
+          -c "tools.cmake.cmaketoolchain:generator=Visual Studio 18 2026"
+          --profile:host=conan/profiles/ci
+
       - name: Configure
-        run: cmake --preset ${{ matrix.build.preset }}
+        run: cmake --preset ${{ matrix.build.preset }}${{ matrix.os.preset_suffix }}
         env:
           CC: ${{ matrix.os.cc }}
           CXX: ${{ matrix.os.cxx }}
 
       - name: Build
-        run: cmake --build build/
+        run: >
+          cmake --build build/
+          ${{ matrix.os.multi_config && format('--config {0}', matrix.build.cmake_build_config) || '' }}
 
       - name: Test
-        run: ctest --test-dir build/ --output-on-failure
+        run: >
+          ctest --test-dir build/ --output-on-failure
+          ${{ matrix.os.multi_config && format('--build-config {0}', matrix.build.cmake_build_config) || '' }}
 
       - name: Coverage report
         if: matrix.build.coverage
