@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <optional>
+#include <vector>
 
 #include "coolgui/events.hpp"
 #include "coolgui/window_config.hpp"
@@ -30,12 +31,10 @@ struct WaylandState {
   xdg_surface *xdg_surf = nullptr;
   xdg_toplevel *toplevel = nullptr;
 
-  bool close_requested = false;
+  std::vector<Event> event_queue;
   bool configured = false; // true after first xdg_surface configure
 
-  u32 pending_width = 0; // 0 = compositor didn't suggest a size
-  u32 pending_height = 0;
-  bool resize_pending = false;
+  bool resize_pending = false; // triggers wl_surface_commit in xdg_surface_configure
 };
 
 struct WaylandHandle {

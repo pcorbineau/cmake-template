@@ -1,6 +1,7 @@
 #pragma once
 
 #include <optional>
+#include <vector>
 
 #include "coolgui/events.hpp"
 #include "coolgui/window_config.hpp"
@@ -18,6 +19,7 @@ namespace coolgui {
 
 struct MacosHandle {
   NSWindow *window{nullptr};
+  std::vector<Event> event_queue;
 };
 
 struct MacosTraits {

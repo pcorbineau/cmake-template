@@ -23,23 +23,25 @@
 
 @end
 
+static const char kEventQueueKey = 0;
+
 // ---------------------------------------------------------------------------
-// WindowDelegate — tracks close button clicks
+// WindowDelegate — pushes CloseEvent into the C++ event queue
 // ---------------------------------------------------------------------------
 @interface CoolguiWindowDelegate : NSObject <NSWindowDelegate>
-@property(nonatomic, assign) BOOL closeRequested;
 @end
 
 @implementation CoolguiWindowDelegate
 
-- (instancetype)init {
-  self = [super init];
-  _closeRequested = NO;
-  return self;
-}
-
-- (BOOL)windowShouldClose:(NSWindow *)__unused sender {
-  self.closeRequested = YES;
+- (BOOL)windowShouldClose:(NSWindow *)sender {
+  NSValue *value = objc_getAssociatedObject(sender, &kEventQueueKey);
+  if (value != nil) {
+    std::vector<coolgui::Event> *queue = nullptr;
+    [value getValue:(void *)&queue];
+    if (queue != nullptr) {
+      queue->emplace_back(coolgui::CloseEvent{});
+    }
+  }
   return NO; // We manage destruction ourselves
 }
 
@@ -89,7 +91,9 @@ auto MacosTraits::create(WindowConfig cfg) -> Handle {
   // Spin the run loop once so the window becomes visible before returning.
   [NSApp run];
 
-  return Handle{window};
+  Handle h{.window = window, .event_queue = {}};
+  objc_setAssociatedObject(window, &kEventQueueKey, [NSValue valueWithPointer:&h.event_queue], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+  return h;
 }
 
 auto MacosTraits::destroy(Handle &handle) -> void {
@@ -104,11 +108,11 @@ auto MacosTraits::poll_event(Handle &handle) -> std::optional<Event> {
     return std::nullopt;
   }
 
-  // Check if close was requested via the window delegate
-  auto *const winDelegate = static_cast<CoolguiWindowDelegate *>([handle.window delegate]);
-  if (winDelegate != nil && winDelegate.closeRequested) {
-    winDelegate.closeRequested = NO;
-    return Event{CloseEvent{}};
+  // Pop queued events first (pushed by the window delegate)
+  if (!handle.event_queue.empty()) {
+    auto evt = handle.event_queue.front();
+    handle.event_queue.erase(handle.event_queue.begin());
+    return evt;
   }
 
   // Drain one event from the Cocoa event queue (non-blocking)
