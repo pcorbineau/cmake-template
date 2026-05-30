@@ -39,7 +39,7 @@ auto wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT {
       DeleteObject(brush);
       return 1;
     }
-    break;
+    return DefWindowProcW(hwnd, msg, wparam, lparam);
   default:
     return DefWindowProcW(hwnd, msg, wparam, lparam);
   }
