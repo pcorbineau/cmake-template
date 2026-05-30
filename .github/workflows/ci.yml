@@ -24,24 +24,50 @@ jobs:
             cc: gcc-16
             cxx: g++-16
             coverage_name: gcc
+            preset_suffix: ""
+            multi_config: false
+            conan_cmake_generator: Ninja
+            setup_msvc: false
           - name: macOS Clang
             runner: macos-26
             cc: clang
             cxx: clang++
             coverage_name: clang
-          - name: Windows MSVC
+            preset_suffix: ""
+            multi_config: false
+            conan_cmake_generator: Ninja
+            setup_msvc: false
+          - name: Windows MSVC Ninja
             runner: windows-2025-vs2026
             coverage_name: msvc
+            preset_suffix: ""
+            multi_config: false
+            conan_cmake_generator: Ninja
+            setup_msvc: true
+          - name: Windows MSVC VS
+            runner: windows-2025-vs2026
+            preset_suffix: "-vs"
+            multi_config: true
+            conan_cmake_generator: Visual Studio 18 2026
+            setup_msvc: false
         build:
           - preset: debug
             conan_build_type: Debug
+            cmake_build_config: Debug
             coverage: false
           - preset: release
             conan_build_type: Release
+            cmake_build_config: Release
             coverage: false
           - preset: coverage
             conan_build_type: Debug
+            cmake_build_config: Debug
             coverage: true
+        exclude:
+          - os:
+              name: Windows MSVC VS
+            build:
+              preset: coverage
 
     steps:
       - name: Checkout
@@ -62,8 +88,6 @@ jobs:
         if: runner.os == 'Windows' && matrix.build.coverage
         run: choco install opencppcoverage -y
 
-      # Ninja 1.13.2 is already pre-installed on macos-26 and windows-2025-vs2026
-
       - name: Set up Python with pip cache
         uses: actions/setup-python@v5
         with:
@@ -77,8 +101,8 @@ jobs:
       - name: Configure Conan profile
         run: conan profile detect --force
 
-      - name: Set up MSVC environment (Windows)
-        if: runner.os == 'Windows'
+      - name: Set up MSVC environment (Windows Ninja)
+        if: matrix.os.setup_msvc
         shell: cmd
         run: |
           call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
@@ -110,23 +134,27 @@ jobs:
         run: >
           conan install . --build=missing
           -s build_type=${{ matrix.build.conan_build_type }}
-          -c tools.cmake.cmaketoolchain:generator=Ninja
+          -c "tools.cmake.cmaketoolchain:generator=${{ matrix.os.conan_cmake_generator }}"
           --profile:host=conan/profiles/ci
         env:
           CC: ${{ matrix.os.cc }}
           CXX: ${{ matrix.os.cxx }}
 
       - name: Configure
-        run: cmake --preset ${{ matrix.build.preset }}
+        run: cmake --preset ${{ matrix.build.preset }}${{ matrix.os.preset_suffix }}
         env:
           CC: ${{ matrix.os.cc }}
           CXX: ${{ matrix.os.cxx }}
 
       - name: Build
-        run: cmake --build build/
+        run: >
+          cmake --build build/
+          ${{ matrix.os.multi_config && format('--config {0}', matrix.build.cmake_build_config) || '' }}
 
       - name: Test
-        run: ctest --test-dir build/ --output-on-failure
+        run: >
+          ctest --test-dir build/ --output-on-failure
+          ${{ matrix.os.multi_config && format('--build-config {0}', matrix.build.cmake_build_config) || '' }}
 
       - name: Coverage report
         if: matrix.build.coverage
@@ -184,3 +212,15 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deploy
         uses: actions/deploy-pages@v5
+
+  ci:
+    name: Build
+    needs: [build]
+    runs-on: ubuntu-24.04
+    if: always()
+    steps:
+      - name: Check all jobs passed
+        run: |
+          if [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+            exit 1
+          fi

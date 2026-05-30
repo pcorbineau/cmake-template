@@ -83,3 +83,15 @@ jobs:
           git diff -U0 origin/${{ github.base_ref }} -- '*.cpp' '*.hpp' \
             | clang-format-diff -p1 -style file | tee /tmp/clang-format.patch
           test ! -s /tmp/clang-format.patch
+
+  ci:
+    name: Formatting
+    needs: [cmake, yaml, python, cpp]
+    runs-on: ubuntu-24.04
+    if: always()
+    steps:
+      - name: Check all jobs passed
+        run: |
+          if [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+            exit 1
+          fi
