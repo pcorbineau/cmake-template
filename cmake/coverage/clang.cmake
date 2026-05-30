@@ -27,10 +27,9 @@ set(COVERAGE_CXX_FLAGS
 )
 set(COVERAGE_LD_FLAGS -fprofile-instr-generate)
 
-set(coverage_target mylib_tests)
+set(coverage_target coolgui_tests)
 set(coverage_ignore_regex "tests/|${CMAKE_BINARY_DIR}")
 
-# we want to glob all *.profraw, *.profdata, *.gcda, *.gcno files for cleanup, the cleanup should be recusive under ${CMAKE_BINARY_DIR}
 add_custom_target(
     coverage_cleanup
     COMMAND
@@ -62,8 +61,9 @@ add_custom_target(
         -DOUTPUT=${CMAKE_BINARY_DIR}/coverage_report/summary.json -P
         ${CMAKE_CURRENT_LIST_DIR}/llvm_cov_export.cmake
     COMMAND
-        ${LLVM_COV_EXECUTABLE} report --instr-profile=${CMAKE_BINARY_DIR}/coverage.profdata
-        --ignore-filename-regex=${coverage_ignore_regex} $<TARGET_FILE:${coverage_target}>
+        ${LLVM_COV_EXECUTABLE} report -object $<TARGET_FILE:${coverage_target}>
+        --instr-profile=${CMAKE_BINARY_DIR}/coverage.profdata
+        --ignore-filename-regex=${coverage_ignore_regex}
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     DEPENDS
         ${coverage_target}

@@ -29,6 +29,7 @@
 			"cacheVariables": {
 				"ENABLE_COVERAGE": "ON",
 				"USE_CLANG_TIDY": "OFF",
+				"BUILD_EXAMPLE": "OFF",
 				"LLVM_ROOT": "$env{LLVM_ROOT}"
 			}
 		},
