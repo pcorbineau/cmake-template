@@ -34,7 +34,7 @@ set(COVERAGE_CXX_FLAGS
 )
 set(COVERAGE_LD_FLAGS --coverage)
 
-set(coverage_target mylib_tests)
+set(coverage_target coolgui_tests)
 
 add_custom_target(
     coverage_cleanup
