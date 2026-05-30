@@ -62,13 +62,13 @@ auto MacosTraits::create(WindowConfig cfg) -> Handle {
 
   NSRect const frame = NSMakeRect(0, 0, static_cast<CGFloat>(cfg.width.get()), static_cast<CGFloat>(cfg.height.get()));
 
-  NSWindowStyleMask const style = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable |
-                                  NSWindowStyleMaskResizable;
+  NSWindowStyleMask const style = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
+                                  NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 
   NSWindow *const window = [[NSWindow alloc] initWithContentRect:frame
-                                                 styleMask:style
-                                                   backing:NSBackingStoreBuffered
-                                                     defer:NO];
+                                                       styleMask:style
+                                                         backing:NSBackingStoreBuffered
+                                                           defer:NO];
 
   auto titleStr = std::string{cfg.title.get()};
   if (auto *const title = [NSString stringWithUTF8String:titleStr.c_str()]) {
@@ -112,7 +112,10 @@ auto MacosTraits::poll_event(Handle &handle) -> std::optional<Event> {
   }
 
   // Drain one event from the Cocoa event queue (non-blocking)
-  NSEvent *const event = [NSApp nextEventMatchingMask:NSEventMaskAny untilDate:nil inMode:NSDefaultRunLoopMode dequeue:YES];
+  NSEvent *const event = [NSApp nextEventMatchingMask:NSEventMaskAny
+                                            untilDate:nil
+                                               inMode:NSDefaultRunLoopMode
+                                              dequeue:YES];
   if (event != nil) {
     // Check for resize via NSWindowDidResizeNotification is handled via
     // the run loop; for now forward all events to NSApp and check window frame.

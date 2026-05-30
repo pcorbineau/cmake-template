@@ -42,7 +42,8 @@ TEST_CASE("BasicWindow poll returns ResizeEvent", "[BasicWindow]") {
   coolgui::BasicWindow<mock::Traits> win{k_cfg, mock::Traits{mock::Scenario::ThenResize}};
 
   auto evt = win.poll();
-  auto evt_val = evt.value_or(coolgui::Event{coolgui::ResizeEvent{.width = coolgui::Width{0}, .height = coolgui::Height{0}}});
+  auto evt_val =
+      evt.value_or(coolgui::Event{coolgui::ResizeEvent{.width = coolgui::Width{0}, .height = coolgui::Height{0}}});
   REQUIRE(evt.has_value());
   auto *resize = std::get_if<coolgui::ResizeEvent>(&evt_val);
   REQUIRE(resize != nullptr);
