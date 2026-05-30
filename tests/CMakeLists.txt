@@ -19,3 +19,7 @@ add_custom_target(run_tests
 	COMMAND $<TARGET_FILE:mylib_tests>
 	DEPENDS mylib_tests
 )
+
+if(ENABLE_COVERAGE)
+	add_coverage_target(mylib_tests)
+endif()

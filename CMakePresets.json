@@ -21,6 +21,14 @@
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Release"
 			}
+		},
+		{
+			"name": "coverage",
+			"inherits": "debug",
+			"cacheVariables": {
+				"ENABLE_COVERAGE": "ON",
+				"USE_CLANG_TIDY": "OFF"
+			}
 		}
 	]
 }
