@@ -13,79 +13,35 @@ permissions:
 
 jobs:
   build:
-    name: ${{ matrix.name }}
-    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os.name }} ${{ matrix.build.preset }}
+    runs-on: ${{ matrix.os.runner }}
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - name: Linux GCC Debug
-            os: ubuntu-24.04
+        os:
+          - name: Linux GCC
+            runner: ubuntu-24.04
             cc: gcc-16
             cxx: g++-16
-            preset: debug
-            conan_build_type: Debug
-            coverage: false
-
-          - name: Linux GCC Release
-            os: ubuntu-24.04
-            cc: gcc-16
-            cxx: g++-16
-            preset: release
-            conan_build_type: Release
-            coverage: false
-
-          - name: Linux GCC Coverage
-            os: ubuntu-24.04
-            cc: gcc-16
-            cxx: g++-16
-            preset: coverage
-            conan_build_type: Debug
-            coverage: true
-
-          - name: macOS Clang Debug
-            os: macos-26
+            coverage_name: gcc
+          - name: macOS Clang
+            runner: macos-26
             cc: clang
             cxx: clang++
-            preset: debug
-            conan_build_type: Debug
-            coverage: false
-
-          - name: macOS Clang Release
-            os: macos-26
-            cc: clang
-            cxx: clang++
-            preset: release
-            conan_build_type: Release
-            coverage: false
-
-          - name: macOS Clang Coverage
-            os: macos-26
-            cc: clang
-            cxx: clang++
-            preset: coverage
-            conan_build_type: Debug
-            llvm: /Library/Developer/CommandLineTools/usr/bin
-            coverage: true
-
-          - name: Windows MSVC Debug
-            os: windows-2025-vs2026
-            preset: debug
-            conan_build_type: Debug
-            coverage: false
-
-          - name: Windows MSVC Release
-            os: windows-2025-vs2026
-            preset: release
-            conan_build_type: Release
-            coverage: false
-
-          - name: Windows MSVC Coverage
-            os: windows-2025-vs2026
-            preset: coverage
-            conan_build_type: Debug
-            coverage: true
+            coverage_name: clang
+          - name: Windows MSVC
+            runner: windows-2025-vs2026
             coverage_name: msvc
+        build:
+          - preset: debug
+            conan_build_type: Debug
+            coverage: false
+          - preset: release
+            conan_build_type: Release
+            coverage: false
+          - preset: coverage
+            conan_build_type: Debug
+            coverage: true
 
     steps:
       - name: Checkout
@@ -103,7 +59,7 @@ jobs:
           sudo apt-get install -y gcc-16 g++-16
 
       - name: Install OpenCppCoverage (Windows)
-        if: runner.os == 'Windows' && matrix.coverage
+        if: runner.os == 'Windows' && matrix.build.coverage
         run: choco install opencppcoverage -y
 
       # Ninja 1.13.2 is already pre-installed on macos-26 and windows-2025-vs2026
@@ -128,10 +84,9 @@ jobs:
           call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
           set >> %GITHUB_ENV%
 
-      - name: Set up Apple-Clang environment (macOS)
-        if: ${{ runner.os == 'macOS' && matrix.coverage }}
-        run: |
-          echo "LLVM_ROOT=$(xcrun -f llvm-cov | xargs dirname)" >> $GITHUB_ENV
+      - name: Detect LLVM root (macOS)
+        if: runner.os == 'macOS' && matrix.build.coverage
+        run: echo "LLVM_ROOT=$(xcrun -f llvm-cov | xargs dirname)" >> $GITHUB_ENV
 
       - name: Cache Conan packages
         uses: actions/cache@v5
@@ -139,34 +94,33 @@ jobs:
           path: |
             ~/.conan2/p
             ~\AppData\Local\conan\p
-          key: conan-${{ matrix.name }}-${{ hashFiles('conanfile.txt') }}
-          restore-keys: conan-${{ matrix.name }}-
+          key: conan-${{ matrix.os.name }}-${{ hashFiles('conanfile.txt') }}
+          restore-keys: conan-${{ matrix.os.name }}-
 
       - name: Set up ccache
         uses: actions/cache@v5
         with:
           path: ${{ runner.os == 'Windows' && '~\AppData\Local\ccache' || '~/.cache/ccache' }}
-          key: ccache-${{ matrix.name }}-${{ github.ref_name }}-${{ github.sha }}
+          key: ccache-${{ matrix.os.name }}-${{ github.ref_name }}-${{ github.sha }}
           restore-keys: |
-            ccache-${{ matrix.name }}-${{ github.ref_name }}-
-            ccache-${{ matrix.name }}-
+            ccache-${{ matrix.os.name }}-${{ github.ref_name }}-
+            ccache-${{ matrix.os.name }}-
 
       - name: Install dependencies with Conan
         run: >
           conan install . --build=missing
-          -s build_type=${{ matrix.conan_build_type }}
+          -s build_type=${{ matrix.build.conan_build_type }}
           -c tools.cmake.cmaketoolchain:generator=Ninja
           --profile:host=conan/profiles/ci
         env:
-          CC: ${{ matrix.cc }}
-          CXX: ${{ matrix.cxx }}
+          CC: ${{ matrix.os.cc }}
+          CXX: ${{ matrix.os.cxx }}
 
       - name: Configure
-        run: |
-          cmake --preset ${{ matrix.preset }} -DLLVM_ROOT=$LLVM_ROOT
+        run: cmake --preset ${{ matrix.build.preset }}
         env:
-          CC: ${{ matrix.cc }}
-          CXX: ${{ matrix.cxx }}
+          CC: ${{ matrix.os.cc }}
+          CXX: ${{ matrix.os.cxx }}
 
       - name: Build
         run: cmake --build build/
@@ -175,14 +129,14 @@ jobs:
         run: ctest --test-dir build/ --output-on-failure
 
       - name: Coverage report
-        if: matrix.coverage
+        if: matrix.build.coverage
         run: cmake --build build/ --target coverage
 
       - name: Upload coverage report artifact
-        if: matrix.coverage && github.ref == 'refs/heads/main'
+        if: matrix.build.coverage && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v7
         with:
-          name: coverage-${{ matrix.coverage_name || (matrix.cc == 'clang' && 'clang' || 'gcc') }}
+          name: coverage-${{ matrix.os.coverage_name }}
           path: build/coverage_report/
           retention-days: 1
 

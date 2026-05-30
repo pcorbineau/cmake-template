@@ -19,7 +19,7 @@
 			"name": "release",
 			"inherits": "default",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Release"
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
 			}
 		},
 		{
@@ -27,7 +27,8 @@
 			"inherits": "debug",
 			"cacheVariables": {
 				"ENABLE_COVERAGE": "ON",
-				"USE_CLANG_TIDY": "OFF"
+				"USE_CLANG_TIDY": "OFF",
+				"LLVM_ROOT": "$env{LLVM_ROOT}"
 			}
 		}
 	]
