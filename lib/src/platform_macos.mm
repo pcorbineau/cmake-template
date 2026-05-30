@@ -26,6 +26,31 @@
 static const char kEventQueueKey = 0;
 
 // ---------------------------------------------------------------------------
+// CoolguiContentView — custom NSView that reports mouse-moved events
+// ---------------------------------------------------------------------------
+@interface CoolguiContentView : NSView
+@end
+
+@implementation CoolguiContentView
+
+- (void)mouseMoved:(NSEvent *)event {
+  NSValue *value = objc_getAssociatedObject(self, &kEventQueueKey);
+  if (value != nil) {
+    std::vector<coolgui::Event> *queue = nullptr;
+    [value getValue:(void *)&queue];
+    if (queue != nullptr) {
+      NSPoint const location = [event locationInWindow];
+      queue->emplace_back(coolgui::CursorMoveEvent{
+          .x = coolgui::CursorX{static_cast<coolgui::f64>(location.x)},
+          .y = coolgui::CursorY{static_cast<coolgui::f64>(location.y)},
+      });
+    }
+  }
+}
+
+@end
+
+// ---------------------------------------------------------------------------
 // WindowDelegate — pushes CloseEvent into the C++ event queue
 // ---------------------------------------------------------------------------
 @interface CoolguiWindowDelegate : NSObject <NSWindowDelegate>
@@ -79,6 +104,26 @@ auto MacosTraits::create(WindowConfig cfg) -> Handle {
     window.title = @"";
   }
 
+  // Set initial background color
+  NSColor *const bgColor = [NSColor colorWithCalibratedRed:cfg.background_color.red
+                                                     green:cfg.background_color.green
+                                                      blue:cfg.background_color.blue
+                                                     alpha:1.0];
+  window.backgroundColor = bgColor;
+
+  // Install custom content view for cursor tracking
+  CoolguiContentView *const contentView = [[CoolguiContentView alloc] initWithFrame:frame];
+  window.contentView = contentView;
+
+  NSTrackingArea *const trackingArea =
+      [[NSTrackingArea alloc] initWithRect:contentView.bounds
+                                   options:NSTrackingMouseMoved | NSTrackingActiveInActiveApp | NSTrackingInVisibleRect
+                                     owner:contentView
+                                  userInfo:nil];
+  [contentView addTrackingArea:trackingArea];
+  [trackingArea release];
+  [window setAcceptsMouseMovedEvents:YES];
+
   auto *const winDelegate = [[CoolguiWindowDelegate alloc] init];
   [window setDelegate:winDelegate];
   objc_setAssociatedObject(window, @selector(delegate), winDelegate, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
@@ -92,7 +137,10 @@ auto MacosTraits::create(WindowConfig cfg) -> Handle {
   [NSApp run];
 
   Handle h{.window = window, .event_queue = {}};
-  objc_setAssociatedObject(window, &kEventQueueKey, [NSValue valueWithPointer:&h.event_queue], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+  NSValue *const queuePtr = [NSValue valueWithPointer:&h.event_queue];
+  objc_setAssociatedObject(window, &kEventQueueKey, queuePtr, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+  objc_setAssociatedObject(contentView, &kEventQueueKey, queuePtr, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+  [contentView release];
   return h;
 }
 
@@ -108,7 +156,7 @@ auto MacosTraits::poll_event(Handle &handle) -> std::optional<Event> {
     return std::nullopt;
   }
 
-  // Pop queued events first (pushed by the window delegate)
+  // Pop queued events first (pushed by the window/content view delegates)
   if (!handle.event_queue.empty()) {
     auto evt = handle.event_queue.front();
     handle.event_queue.erase(handle.event_queue.begin());
@@ -140,6 +188,13 @@ auto MacosTraits::poll_event(Handle &handle) -> std::optional<Event> {
   }
 
   return std::nullopt;
+}
+
+auto MacosTraits::set_background_color(Handle &handle, BackgroundColor color) -> void {
+  if (handle.window != nullptr) {
+    NSColor *const nsColor = [NSColor colorWithCalibratedRed:color.red green:color.green blue:color.blue alpha:1.0];
+    handle.window.backgroundColor = nsColor;
+  }
 }
 
 } // namespace coolgui

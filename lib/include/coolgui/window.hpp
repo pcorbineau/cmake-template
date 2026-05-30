@@ -74,6 +74,12 @@ public:
     }
   }
 
+  auto set_background_color(const BackgroundColor &color) -> void {
+    if (open_) {
+      traits_.set_background_color(handle_, color);
+    }
+  }
+
   [[nodiscard]] constexpr auto is_open() const noexcept -> bool { return open_; }
   [[nodiscard]] constexpr auto traits() const noexcept -> const Traits & { return traits_; }
 };

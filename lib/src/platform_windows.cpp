@@ -27,6 +27,19 @@ auto wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT {
   case WM_DESTROY:
     PostQuitMessage(0);
     return 0;
+  case WM_ERASEBKGND:
+    if (handle != nullptr) {
+      RECT rc{};
+      GetClientRect(hwnd, &rc);
+      COLORREF const cref =
+          RGB(static_cast<BYTE>(handle->bg_color.red * 255.0), static_cast<BYTE>(handle->bg_color.green * 255.0),
+              static_cast<BYTE>(handle->bg_color.blue * 255.0));
+      HBRUSH brush = CreateSolidBrush(cref);
+      FillRect(std::bit_cast<HDC>(wparam), &rc, brush);
+      DeleteObject(brush);
+      return 1;
+    }
+    return DefWindowProcW(hwnd, msg, wparam, lparam);
   default:
     return DefWindowProcW(hwnd, msg, wparam, lparam);
   }
@@ -49,6 +62,7 @@ auto WindowsTraits::create(WindowConfig cfg) -> Handle {
   RegisterClassExW(&wc);
 
   Handle handle{};
+  handle.bg_color = cfg.background_color;
 
   // Convert title from UTF-8 string_view to UTF-16
   auto titleUtf8 = std::string{cfg.title.get()};
@@ -114,6 +128,13 @@ auto WindowsTraits::poll_event(Handle &handle) -> std::optional<Event> {
   }
 
   return std::nullopt;
+}
+
+auto WindowsTraits::set_background_color(Handle &handle, BackgroundColor color) -> void {
+  handle.bg_color = color;
+  if (handle.hwnd != nullptr) {
+    InvalidateRect(handle.hwnd, nullptr, TRUE);
+  }
 }
 
 } // namespace coolgui

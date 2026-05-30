@@ -13,6 +13,11 @@ struct ResizeEvent {
   Height height;
 };
 
-using Event = std::variant<CloseEvent, ResizeEvent>;
+struct CursorMoveEvent {
+  CursorX x;
+  CursorY y;
+};
+
+using Event = std::variant<CloseEvent, ResizeEvent, CursorMoveEvent>;
 
 } // namespace coolgui

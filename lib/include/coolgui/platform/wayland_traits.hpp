@@ -35,6 +35,7 @@ struct WaylandState {
   bool configured = false; // true after first xdg_surface configure
 
   bool resize_pending = false; // triggers wl_surface_commit in xdg_surface_configure
+  BackgroundColor desired_bg_color{};
 };
 
 struct WaylandHandle {
@@ -47,6 +48,7 @@ struct WaylandTraits {
   static auto create(WindowConfig cfg) -> Handle;
   static auto destroy(Handle &handle) -> void;
   static auto poll_event(Handle &handle) -> std::optional<Event>;
+  static auto set_background_color(Handle &handle, BackgroundColor color) -> void;
 };
 
 } // namespace coolgui
