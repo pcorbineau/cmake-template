@@ -214,7 +214,7 @@ jobs:
         uses: actions/deploy-pages@v5
 
   ci:
-    name: CI
+    name: Build
     needs: [build]
     runs-on: ubuntu-24.04
     if: always()

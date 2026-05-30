@@ -85,7 +85,7 @@ jobs:
           test ! -s /tmp/clang-format.patch
 
   ci:
-    name: CI
+    name: Formatting
     needs: [cmake, yaml, python, cpp]
     runs-on: ubuntu-24.04
     if: always()
